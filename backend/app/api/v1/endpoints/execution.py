@@ -395,17 +395,19 @@ async def get_execution_tasks(
 
     if live and live.get("report"):
         report = live["report"]
-        # Extract tasks from report
-        for action in report.actions_performed:
-            in_memory_tasks.append({
-                "task_id": action.get("task", "").lower().replace(" ", "_"),
-                "task_title": action.get("task", ""),
-                "tool_id": action.get("tool", ""),
-                "status": action.get("status", ""),
-                "execution_time_ms": action.get("duration_ms", 0),
-                "retries": action.get("retries", 0),
-                "source": "in_memory",
-            })
+        # Extract tasks from report — handle both dict and dataclass
+        actions = report.actions_performed if hasattr(report, "actions_performed") else []
+        for action in actions:
+            if isinstance(action, dict):
+                in_memory_tasks.append({
+                    "task_id": action.get("task", "").lower().replace(" ", "_"),
+                    "task_title": action.get("task", ""),
+                    "tool_id": action.get("tool", ""),
+                    "status": action.get("status", ""),
+                    "execution_time_ms": action.get("duration_ms", 0),
+                    "retries": action.get("retries", 0),
+                    "source": "in_memory",
+                })
 
     # Fetch from DB
     db_tasks = []
