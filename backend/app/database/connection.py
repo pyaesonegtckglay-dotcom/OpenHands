@@ -298,10 +298,32 @@ async def init_db():
             )
         """)
 
+        # Artifacts table (Phase 3 — file artifact tracking)
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS task_artifacts (
+                id TEXT PRIMARY KEY,
+                execution_id TEXT NOT NULL,
+                filename VARCHAR(500) NOT NULL,
+                content_type VARCHAR(100) DEFAULT 'text/plain',
+                size_bytes INTEGER DEFAULT 0,
+                download_url TEXT NOT NULL DEFAULT '',
+                created_at TIMESTAMPTZ DEFAULT NOW()
+            )
+        """)
+
+        # Migration: ensure task_reports has all required columns
+        try:
+            await conn.execute("ALTER TABLE task_reports ADD COLUMN IF NOT EXISTS goal TEXT NOT NULL DEFAULT ''")
+            await conn.execute("ALTER TABLE task_reports ADD COLUMN IF NOT EXISTS report_markdown TEXT NOT NULL DEFAULT ''")
+            await conn.execute("ALTER TABLE task_reports ADD COLUMN IF NOT EXISTS report_data TEXT DEFAULT '{}'")
+        except Exception as _mig_err:
+            logger.debug(f"task_reports migration: {_mig_err}")
+
         await conn.execute("CREATE INDEX IF NOT EXISTS idx_task_executions_user_id ON task_executions(user_id)")
         await conn.execute("CREATE INDEX IF NOT EXISTS idx_task_tool_results_exec_id ON task_tool_results(execution_id)")
         await conn.execute("CREATE INDEX IF NOT EXISTS idx_task_exec_events_exec_id ON task_execution_events(execution_id)")
         await conn.execute("CREATE INDEX IF NOT EXISTS idx_task_reports_exec_id ON task_reports(execution_id)")
+        await conn.execute("CREATE INDEX IF NOT EXISTS idx_task_artifacts_exec_id ON task_artifacts(execution_id)")
         logger.info("Phase 3 execution tables initialized")
 
     logger.info("Database tables initialized successfully")

@@ -181,6 +181,20 @@ export const executionAPI = {
     api.get(`/api/v1/execution/${execution_id}`),
   getReport: (execution_id: string) =>
     api.get(`/api/v1/execution/${execution_id}/report`),
+  getTasks: (execution_id: string) =>
+    api.get(`/api/v1/execution/${execution_id}/tasks`),
+  getEvidence: (execution_id: string) =>
+    api.get(`/api/v1/execution/${execution_id}/evidence`),
+  getArtifacts: (execution_id: string) =>
+    api.get(`/api/v1/execution/${execution_id}/artifacts`),
+  downloadFile: (execution_id: string, filename: string) =>
+    `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/execution/${execution_id}/files/${filename}`,
+  executeDirect: (goal: string) =>
+    api.post("/api/v1/execution/execute-direct", { goal }),
+  routeTest: (goal: string) =>
+    api.post("/api/v1/execution/tools/route-test", { goal }),
+  getWorkspaceFiles: () =>
+    api.get("/api/v1/execution/workspace/files"),
   getHistory: (limit = 20, offset = 0) =>
     api.get(`/api/v1/execution/history?limit=${limit}&offset=${offset}`),
   getTools: () =>
