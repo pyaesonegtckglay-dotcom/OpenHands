@@ -1,0 +1,273 @@
+/* ============================================================
+   ManusAI Design Token System
+   Inspired by Manus / Genspark / Linear aesthetic
+   Dark mode default, light mode via .light class
+   ============================================================ */
+
+:root {
+  /* ── Brand Colors ── */
+  --brand-primary: #c9b974;
+  --brand-primary-hover: #d4c882;
+  --brand-primary-muted: rgba(201, 185, 116, 0.15);
+  --brand-accent: #6366f1;
+  --brand-accent-hover: #818cf8;
+
+  /* ── Surface Colors (Dark Mode Default) ── */
+  --surface-bg: #0d0f11;
+  --surface-bg-elevated: #13161a;
+  --surface-sidebar: #0f1114;
+  --surface-sidebar-hover: #1a1d24;
+  --surface-sidebar-active: #1e2128;
+  --surface-card: #161920;
+  --surface-card-hover: #1c2028;
+  --surface-input: #1a1d24;
+  --surface-input-focus: #1e2330;
+  --surface-overlay: rgba(0, 0, 0, 0.6);
+  --surface-border: rgba(255, 255, 255, 0.06);
+  --surface-border-subtle: rgba(255, 255, 255, 0.04);
+  --surface-divider: rgba(255, 255, 255, 0.08);
+
+  /* ── Text Colors ── */
+  --text-primary: #ecedee;
+  --text-secondary: #9099ac;
+  --text-tertiary: #5a6070;
+  --text-muted: #3d4250;
+  --text-inverse: #0d0f11;
+  --text-link: #c9b974;
+  --text-link-hover: #d4c882;
+
+  /* ── Status Colors ── */
+  --status-success: #a5e75e;
+  --status-success-bg: rgba(165, 231, 94, 0.12);
+  --status-error: #e76a5e;
+  --status-error-bg: rgba(231, 106, 94, 0.12);
+  --status-warning: #f0a429;
+  --status-warning-bg: rgba(240, 164, 41, 0.12);
+  --status-info: #6ab0f0;
+  --status-info-bg: rgba(106, 176, 240, 0.12);
+  --status-active: #a5e75e;
+  --status-idle: #9099ac;
+  --status-thinking: #c9b974;
+
+  /* ── Spacing ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ── Typography ── */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-md: 15px;
+  --text-lg: 17px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+
+  /* ── Shadows ── */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.5), 0 0 1px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.7), 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-glow-brand: 0 0 16px rgba(201, 185, 116, 0.2);
+  --shadow-glow-accent: 0 0 16px rgba(99, 102, 241, 0.3);
+
+  /* ── Border Radius ── */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* ── Layout ── */
+  --sidebar-width: 260px;
+  --sidebar-collapsed: 56px;
+  --right-panel-width: 320px;
+  --topbar-height: 52px;
+
+  /* ── Transitions ── */
+  --transition-fast: 120ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ── Z-index ── */
+  --z-base: 0;
+  --z-raised: 10;
+  --z-dropdown: 100;
+  --z-sidebar: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+}
+
+/* ── Light Mode Override ── */
+.light {
+  --surface-bg: #f5f6f8;
+  --surface-bg-elevated: #ffffff;
+  --surface-sidebar: #f0f1f4;
+  --surface-sidebar-hover: #e6e8ed;
+  --surface-sidebar-active: #dde0e8;
+  --surface-card: #ffffff;
+  --surface-card-hover: #f5f6f8;
+  --surface-input: #ffffff;
+  --surface-input-focus: #f0f1f4;
+  --surface-overlay: rgba(0, 0, 0, 0.3);
+  --surface-border: rgba(0, 0, 0, 0.08);
+  --surface-border-subtle: rgba(0, 0, 0, 0.04);
+  --surface-divider: rgba(0, 0, 0, 0.1);
+
+  --text-primary: #0d0f11;
+  --text-secondary: #4a5162;
+  --text-tertiary: #787f8e;
+  --text-muted: #a0a7b4;
+  --text-inverse: #ecedee;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.1), 0 0 1px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ── Shell Layout Utilities ── */
+.shell-layout {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background: var(--surface-bg);
+}
+
+.shell-sidebar {
+  flex-shrink: 0;
+  width: var(--sidebar-width);
+  background: var(--surface-sidebar);
+  border-right: 1px solid var(--surface-border);
+  transition: width var(--transition-slow);
+  overflow: hidden;
+}
+
+.shell-sidebar.collapsed {
+  width: var(--sidebar-collapsed);
+}
+
+.shell-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--surface-bg);
+}
+
+.shell-right-panel {
+  flex-shrink: 0;
+  width: var(--right-panel-width);
+  background: var(--surface-sidebar);
+  border-left: 1px solid var(--surface-border);
+  transition: width var(--transition-slow), opacity var(--transition-base);
+  overflow: hidden;
+}
+
+.shell-right-panel.hidden {
+  width: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Sidebar Nav Items ── */
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar-nav-item:hover {
+  background: var(--surface-sidebar-hover);
+  color: var(--text-primary);
+}
+
+.sidebar-nav-item.active {
+  background: var(--surface-sidebar-active);
+  color: var(--text-primary);
+}
+
+.sidebar-nav-item.active .nav-icon {
+  color: var(--brand-primary);
+}
+
+/* ── Pulse Animation for active agent ── */
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  70% { transform: scale(1.4); opacity: 0; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+.pulse-dot {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pulse-dot::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--status-active);
+  animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+/* ── Scrollbar ── */
+.shell-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.shell-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.shell-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--surface-border);
+  border-radius: var(--radius-full);
+}
+
+.shell-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}

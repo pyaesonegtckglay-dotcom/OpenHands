@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./components/features/shell/design-tokens.css";
 
 @plugin '../hero.ts';
 @config "../tailwind.config.js";
