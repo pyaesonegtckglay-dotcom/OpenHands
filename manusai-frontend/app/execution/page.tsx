@@ -602,7 +602,7 @@ function TaskPanel({ directReport }: { directReport: DirectReport | null }) {
                     <p className="text-gray-200 text-xs truncate">{taskTitle}</p>
                     <p className="text-gray-600 text-[9px]">Tool: {toolId}</p>
                   </div>
-                  {entry.completed?.data?.execution_time_ms && (
+                  {!!entry.completed?.data?.execution_time_ms && (
                     <span className="text-gray-600 text-[9px]">{Number(entry.completed.data.execution_time_ms)}ms</span>
                   )}
                 </div>
