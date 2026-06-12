@@ -10,7 +10,6 @@ import {
   BarChart2,
   History,
   ChevronRight,
-  Send,
   Sparkles,
   Download,
   FileText,
