@@ -70,7 +70,6 @@ export function ErrorBoundary() {
 }
 
 export default function MainApp() {
-  const appTitle = useAppTitle();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [searchParams] = useSearchParams();
@@ -258,8 +257,6 @@ export default function MainApp() {
         data-testid="root-layout"
         className="flex flex-col w-full h-full overflow-hidden"
       >
-        <title>{appTitle}</title>
-
         {config.data &&
           (config.data.maintenance_start_time ||
             (config.data.faulty_models &&

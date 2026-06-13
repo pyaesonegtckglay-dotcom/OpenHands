@@ -157,8 +157,8 @@ export const MultiAgentChat: React.FC = () => {
     try {
       const result = await multiAgentService.executeGoal({
         goal: goal.trim(),
-        agentTypes: selectedAgents,
-        collaborationMode,
+        agent_types: selectedAgents,
+        collaboration_mode: collaborationMode,
       });
 
       setExecution(result);
@@ -172,8 +172,9 @@ export const MultiAgentChat: React.FC = () => {
       ]);
 
       // Add result events
-      if (result.results?.steps) {
-        result.results.steps.forEach((step: { step: number; output: string }, idx: number) => {
+      if (result.results && typeof result.results === 'object' && 'steps' in result.results) {
+        const steps = (result.results as { steps?: { step: number; output: string }[] }).steps || [];
+        steps.forEach((step: { step: number; output: string }, idx: number) => {
           setEvents((prev) => [
             ...prev,
             {
@@ -445,7 +446,7 @@ export const MultiAgentChat: React.FC = () => {
               <ExecutionTimeline
                 executionId={execution?.execution_id}
                 events={events}
-                execution={execution}
+                execution={execution ?? undefined}
               />
             </TabsContent>
 

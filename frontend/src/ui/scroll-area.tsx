@@ -5,7 +5,7 @@ import { cn } from "#/utils/utils";
 interface ScrollAreaProps {
   children: ReactNode;
   className?: string;
-  ref?: RefObject<HTMLDivElement>;
+  ref?: RefObject<HTMLDivElement | null>;
 }
 
 export function ScrollArea({ children, className, ref }: ScrollAreaProps) {

@@ -4,9 +4,19 @@ import { cn } from "#/utils/utils";
 
 interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {
   className?: string;
+  onCheckedChange?: (checked: boolean) => void;
 }
 
-export function Checkbox({ className, ...props }: CheckboxProps) {
+export function Checkbox({ className, onCheckedChange, ...props }: CheckboxProps) {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (props.onChange) {
+      props.onChange(e);
+    }
+    if (onCheckedChange) {
+      onCheckedChange(e.target.checked);
+    }
+  };
+
   return (
     <input
       type="checkbox"
@@ -15,6 +25,7 @@ export function Checkbox({ className, ...props }: CheckboxProps) {
         className
       )}
       {...props}
+      onChange={handleChange}
     />
   );
 }

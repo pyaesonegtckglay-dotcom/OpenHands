@@ -44,6 +44,7 @@ interface CardProps extends VariantProps<typeof cardVariants> {
   children?: ReactNode;
   className?: string;
   testId?: string;
+  onClick?: () => void;
 }
 
 export function Card({
@@ -53,11 +54,13 @@ export function Card({
   theme,
   hover,
   gradient,
+  onClick,
 }: CardProps) {
   return (
     <div
       data-testid={testId}
       className={cn(cardVariants({ theme, hover, gradient }), className)}
+      onClick={onClick}
     >
       {children}
     </div>

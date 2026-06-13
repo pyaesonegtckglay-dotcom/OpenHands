@@ -44,7 +44,7 @@ export interface Execution {
 }
 
 export interface ExecutionEvent {
-  type: "execution_started" | "agent_started" | "agent_completed" | "execution_completed" | "execution_failed" | "done" | "error";
+  type: "execution_started" | "agent_started" | "agent_completed" | "execution_completed" | "execution_failed" | "done" | "error" | "agent_output";
   execution_id?: string;
   agent_id?: string;
   step?: number;
@@ -52,6 +52,8 @@ export interface ExecutionEvent {
   results?: unknown;
   duration_ms?: number;
   error?: string;
+  message?: string;
+  timestamp?: string;
 }
 
 class MultiAgentService {

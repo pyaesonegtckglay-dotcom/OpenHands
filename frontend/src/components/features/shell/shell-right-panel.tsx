@@ -1,4 +1,5 @@
 import React from "react";
+import { useLocation } from "react-router";
 import { PanelRightClose, PanelRightOpen, Activity } from "lucide-react";
 import { cn } from "#/utils/utils";
 import { useAppShellStore } from "./app-shell-store";
@@ -6,7 +7,6 @@ import { useAgentStore } from "#/stores/agent-store";
 import { AgentState } from "#/types/agent-state";
 import { ConversationTabs } from "../conversation/conversation-tabs/conversation-tabs";
 import { ConversationTabContent } from "../conversation/conversation-tabs/conversation-tab-content/conversation-tab-content";
-import { useSafeConversationId } from "#/hooks/use-conversation-id";
 import { I18nKey } from "#/i18n/declaration";
 import { useTranslation } from "react-i18next";
 
@@ -55,12 +55,13 @@ export function ShellRightPanel() {
   const { t } = useTranslation();
   const { rightPanelOpen, toggleRightPanel } = useAppShellStore();
   const { curAgentState } = useAgentStore();
-  const { conversationId } = useSafeConversationId();
+  const location = useLocation();
+  // Safe check - conversationId is only present in URL when viewing a conversation
+  const hasConversation = location.pathname.startsWith("/conversation/");
 
   const statusLabel = getStatusLabel(curAgentState);
   const statusColor = getStatusColor(curAgentState);
   const isActive = curAgentState === AgentState.RUNNING;
-  const hasConversation = !!conversationId;
 
   return (
     <div className="relative flex items-stretch">
