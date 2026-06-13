@@ -12,6 +12,7 @@ from app.multi_agent.types import AgentType, AgentStatus, AgentTask, AgentMessag
 from app.multi_agent.services.agent_registry import agent_registry
 
 logger = logging.getLogger(__name__)
+logger.info("AgentManager module loaded")
 
 
 class AgentManager:

@@ -15,6 +15,7 @@ from app.multi_agent.services.agent_registry import agent_registry
 from app.multi_agent.services.agent_manager import agent_manager
 
 logger = logging.getLogger(__name__)
+logger.info("MultiAgentOrchestrator module loaded")
 
 
 class MultiAgentOrchestrator:
