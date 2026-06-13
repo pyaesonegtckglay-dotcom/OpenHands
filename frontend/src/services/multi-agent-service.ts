@@ -61,10 +61,20 @@ class MultiAgentService {
    * Get available agent types
    */
   async getAgentTypes(): Promise<AgentType[]> {
-    const { data } = await openHands.get<{ agent_types: AgentType[] }>(
-      `${this.baseURL}/multi-agent/agents/types`
-    );
-    return data.agent_types;
+    try {
+      const { data } = await openHands.get<{ agent_types: AgentType[] }>(
+        `${this.baseURL}/multi-agent/agents/types`
+      );
+      return data?.agent_types || [];
+    } catch {
+      // Return default agent types if API fails
+      return [
+        { type: "researcher", name: "Researcher", description: "Web research and data gathering", capabilities: ["web_search", "analysis"], tools: ["web_search"] },
+        { type: "coder", name: "Coder", description: "Code generation and debugging", capabilities: ["coding", "refactoring"], tools: ["code_editor"] },
+        { type: "writer", name: "Writer", description: "Content creation and editing", capabilities: ["writing", "editing"], tools: ["text_editor"] },
+        { type: "planner", name: "Planner", description: "Task planning and coordination", capabilities: ["planning", "coordination"], tools: ["task_manager"] },
+      ];
+    }
   }
 
   /**
