@@ -1,9 +1,10 @@
 """
-ManusAI Phase 3 - Tool Orchestration Engine
+ManusAI Phase 5 - Multi-Agent Orchestration
 Phase 0: Foundation Layer (preserved - OpenHands runtime, auth, chat)
 Phase 1: Cognitive Layer (intent classification, goal extraction, planning)
 Phase 2: Task Graph Engine (task decomposition, dependency graph, execution waves)
 Phase 3: Tool Orchestration Engine (real execution, tool registry, activity stream, reports)
+Phase 5: Multi-Agent Orchestration (multiple agents, teams, collaboration modes)
 Infrastructure: Supabase PostgreSQL + Redis + E2B Sandbox
 """
 import logging
@@ -50,18 +51,19 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="ManusAI - Phase 3",
+    title="ManusAI - Phase 5",
     description=(
-        "ManusAI Phase 3 — Tool Orchestration Engine. "
+        "ManusAI Phase 5 — Multi-Agent Orchestration. "
         "Phase 0: Foundation Layer (auth, chat, infrastructure). "
         "Phase 1: Cognitive Layer (intent classification, goal extraction, planning). "
         "Phase 2: Task Graph Engine (task decomposition, dependency graph, execution waves). "
         "Phase 3: Tool Orchestration Engine (real execution, tool registry, activity stream, reports). "
+        "Phase 5: Multi-Agent Orchestration (multiple agents, teams, collaboration modes). "
         "Providers: Gemini → GitHub Models → SambaNova (fallback chain). "
         "Infrastructure: Supabase PostgreSQL + Redis + E2B Sandbox. "
         "Tools: Web Search, HTTP Request, File Reader, File Writer, Calculator, Python Executor, AI Synthesis."
     ),
-    version="3.0.0",
+    version="5.0.0",
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
@@ -84,10 +86,10 @@ app.include_router(api_router)
 async def root():
     return {
         "name": "ManusAI",
-        "phase": "3",
-        "phase_name": "Tool Orchestration Engine",
-        "description": "Phase 0: Foundation + Phase 1: Cognitive Layer + Phase 2: Task Graph Engine + Phase 3: Tool Orchestration",
-        "version": "3.0.0",
+        "phase": "5",
+        "phase_name": "Multi-Agent Orchestration",
+        "description": "Phase 0: Foundation + Phase 1: Cognitive Layer + Phase 2: Task Graph Engine + Phase 3: Tool Orchestration + Phase 5: Multi-Agent Orchestration",
+        "version": "5.0.0",
         "docs": "/docs",
         "phases": {
             "0": {"name": "Foundation Layer", "status": "active", "endpoints": ["/api/v1/auth", "/api/v1/chat", "/api/v1/status"]},
@@ -102,6 +104,16 @@ async def root():
                 "/api/v1/execution/history",
                 "/api/v1/execution/tools/registry",
                 "/api/v1/execution/monitor/stats",
+            ]},
+            "5": {"name": "Multi-Agent Orchestration", "status": "active", "endpoints": [
+                "/api/v1/multi-agent/teams/create",
+                "/api/v1/multi-agent/teams",
+                "/api/v1/multi-agent/agents",
+                "/api/v1/multi-agent/execute",
+                "/api/v1/multi-agent/execute/stream",
+                "/api/v1/multi-agent/executions",
+                "/api/v1/multi-agent/types",
+                "/api/v1/multi-agent/modes",
             ]}
         }
     }

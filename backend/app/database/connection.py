@@ -326,4 +326,203 @@ async def init_db():
         await conn.execute("CREATE INDEX IF NOT EXISTS idx_task_artifacts_exec_id ON task_artifacts(execution_id)")
         logger.info("Phase 3 execution tables initialized")
 
+        # ── Phase 5 — Multi-Agent Orchestration ──────────────────────────────────
+        # Agent teams table
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS agent_teams (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                name VARCHAR(100) NOT NULL,
+                goal TEXT NOT NULL,
+                collaboration_mode VARCHAR(50) DEFAULT 'sequential',
+                max_agents_parallel INTEGER DEFAULT 3,
+                shared_context JSONB DEFAULT '{}'::jsonb,
+                supervisor_id UUID,
+                status VARCHAR(50) DEFAULT 'idle',
+                results JSONB DEFAULT '{}'::jsonb,
+                created_at TIMESTAMPTZ DEFAULT NOW(),
+                updated_at TIMESTAMPTZ DEFAULT NOW(),
+                completed_at TIMESTAMPTZ
+            )
+        """)
+
+        # Agents table
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS agents (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                team_id UUID REFERENCES agent_teams(id) ON DELETE SET NULL,
+                name VARCHAR(100) NOT NULL,
+                agent_type VARCHAR(50) NOT NULL,
+                description TEXT,
+                model VARCHAR(100),
+                temperature FLOAT DEFAULT 0.7,
+                max_tokens INTEGER DEFAULT 4096,
+                capabilities JSONB DEFAULT '[]'::jsonb,
+                tools JSONB DEFAULT '[]'::jsonb,
+                system_prompt TEXT,
+                status VARCHAR(50) DEFAULT 'idle',
+                current_task VARCHAR(100),
+                progress FLOAT DEFAULT 0.0,
+                results JSONB DEFAULT '{}'::jsonb,
+                created_at TIMESTAMPTZ DEFAULT NOW(),
+                updated_at TIMESTAMPTZ DEFAULT NOW(),
+                started_at TIMESTAMPTZ,
+                completed_at TIMESTAMPTZ
+            )
+        """)
+
+        # Agent tasks table
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS agent_tasks (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                agent_id UUID REFERENCES agents(id) ON DELETE CASCADE,
+                team_id UUID REFERENCES agent_teams(id) ON DELETE SET NULL,
+                user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                task_id VARCHAR(100) UNIQUE NOT NULL,
+                description TEXT NOT NULL,
+                context JSONB DEFAULT '{}'::jsonb,
+                priority INTEGER DEFAULT 0,
+                deadline TIMESTAMPTZ,
+                dependencies JSONB DEFAULT '[]'::jsonb,
+                expected_output TEXT,
+                status VARCHAR(50) DEFAULT 'pending',
+                progress FLOAT DEFAULT 0.0,
+                result JSONB,
+                error TEXT,
+                created_at TIMESTAMPTZ DEFAULT NOW(),
+                assigned_at TIMESTAMPTZ,
+                started_at TIMESTAMPTZ,
+                completed_at TIMESTAMPTZ
+            )
+        """)
+
+        # Agent messages table
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS agent_messages (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                agent_id UUID REFERENCES agents(id) ON DELETE CASCADE,
+                user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                message_id VARCHAR(100) UNIQUE NOT NULL,
+                sender_id VARCHAR(100),
+                sender_type VARCHAR(50),
+                recipient_id VARCHAR(100),
+                role VARCHAR(50) NOT NULL,
+                content TEXT NOT NULL,
+                attachments JSONB DEFAULT '[]'::jsonb,
+                metadata JSONB DEFAULT '{}'::jsonb,
+                created_at TIMESTAMPTZ DEFAULT NOW()
+            )
+        """)
+
+        # Team messages table
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS team_messages (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                team_id UUID NOT NULL REFERENCES agent_teams(id) ON DELETE CASCADE,
+                user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                message_id VARCHAR(100) UNIQUE NOT NULL,
+                sender_id VARCHAR(100),
+                sender_type VARCHAR(50),
+                role VARCHAR(50) NOT NULL,
+                content TEXT NOT NULL,
+                metadata JSONB DEFAULT '{}'::jsonb,
+                created_at TIMESTAMPTZ DEFAULT NOW()
+            )
+        """)
+
+        # Multi-agent executions table
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS multi_agent_executions (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                team_id UUID REFERENCES agent_teams(id) ON DELETE SET NULL,
+                execution_id VARCHAR(100) UNIQUE NOT NULL,
+                goal TEXT NOT NULL,
+                status VARCHAR(50) DEFAULT 'started',
+                total_agents INTEGER DEFAULT 0,
+                active_agents INTEGER DEFAULT 0,
+                completed_agents INTEGER DEFAULT 0,
+                failed_agents INTEGER DEFAULT 0,
+                progress FLOAT DEFAULT 0.0,
+                results JSONB DEFAULT '{}'::jsonb,
+                artifacts JSONB DEFAULT '[]'::jsonb,
+                report TEXT,
+                created_at TIMESTAMPTZ DEFAULT NOW(),
+                started_at TIMESTAMPTZ,
+                completed_at TIMESTAMPTZ,
+                duration_ms INTEGER
+            )
+        """)
+
+        # Add foreign key to agents for user relationship
+        try:
+            await conn.execute("""
+                ALTER TABLE agents 
+                ADD CONSTRAINT fk_agents_user 
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            """)
+        except Exception as _fk_err:
+            logger.debug(f"agents user FK: {_fk_err}")
+
+        # Add foreign keys to agent_tasks
+        try:
+            await conn.execute("""
+                ALTER TABLE agent_tasks 
+                ADD CONSTRAINT fk_agent_tasks_user 
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            """)
+        except Exception as _fk_err:
+            logger.debug(f"agent_tasks user FK: {_fk_err}")
+
+        # Add foreign keys to agent_messages
+        try:
+            await conn.execute("""
+                ALTER TABLE agent_messages 
+                ADD CONSTRAINT fk_agent_messages_user 
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            """)
+        except Exception as _fk_err:
+            logger.debug(f"agent_messages user FK: {_fk_err}")
+
+        # Add foreign keys to team_messages
+        try:
+            await conn.execute("""
+                ALTER TABLE team_messages 
+                ADD CONSTRAINT fk_team_messages_user 
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            """)
+        except Exception as _fk_err:
+            logger.debug(f"team_messages user FK: {_fk_err}")
+
+        # Add foreign keys to multi_agent_executions
+        try:
+            await conn.execute("""
+                ALTER TABLE multi_agent_executions 
+                ADD CONSTRAINT fk_multi_agent_executions_user 
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            """)
+        except Exception as _fk_err:
+            logger.debug(f"multi_agent_executions user FK: {_fk_err}")
+
+        # Add foreign key to agent_teams
+        try:
+            await conn.execute("""
+                ALTER TABLE agent_teams 
+                ADD CONSTRAINT fk_agent_teams_user 
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            """)
+        except Exception as _fk_err:
+            logger.debug(f"agent_teams user FK: {_fk_err}")
+
+        await conn.execute("CREATE INDEX IF NOT EXISTS idx_agent_teams_user_id ON agent_teams(user_id)")
+        await conn.execute("CREATE INDEX IF NOT EXISTS idx_agents_user_id ON agents(user_id)")
+        await conn.execute("CREATE INDEX IF NOT EXISTS idx_agents_team_id ON agents(team_id)")
+        await conn.execute("CREATE INDEX IF NOT EXISTS idx_agent_tasks_user_id ON agent_tasks(user_id)")
+        await conn.execute("CREATE INDEX IF NOT EXISTS idx_agent_tasks_agent_id ON agent_tasks(agent_id)")
+        await conn.execute("CREATE INDEX IF NOT EXISTS idx_agent_messages_agent_id ON agent_messages(agent_id)")
+        await conn.execute("CREATE INDEX IF NOT EXISTS idx_team_messages_team_id ON team_messages(team_id)")
+        await conn.execute("CREATE INDEX IF NOT EXISTS idx_multi_agent_executions_user_id ON multi_agent_executions(user_id)")
+        logger.info("Phase 5 multi-agent tables initialized")
+
     logger.info("Database tables initialized successfully")

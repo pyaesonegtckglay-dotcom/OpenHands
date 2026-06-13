@@ -4,6 +4,7 @@ from app.api.v1.endpoints.cognitive import cognitive_router, planner_router
 from app.api.v1.endpoints.taskgraph import taskgraph_router
 from app.api.v1.endpoints.stream import stream_router
 from app.api.v1.endpoints.execution import execution_router
+from app.api.v1.endpoints.multi_agent import router as multi_agent_router
 
 router = APIRouter(prefix="/api/v1")
 
@@ -22,3 +23,6 @@ router.include_router(stream_router)
 
 # Phase 3 routes (additive — Tool Orchestration Engine)
 router.include_router(execution_router)
+
+# Phase 5 routes (additive — Multi-Agent Orchestration)
+router.include_router(multi_agent_router)
