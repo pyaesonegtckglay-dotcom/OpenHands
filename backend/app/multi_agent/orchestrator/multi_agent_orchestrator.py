@@ -156,14 +156,20 @@ class MultiAgentOrchestrator:
         
         try:
             # Execute based on collaboration mode
+            logger.info(f"Calling execute method for mode: {collaboration_mode}")
             if collaboration_mode == CollaborationMode.SEQUENTIAL:
+                logger.info(f"Calling _execute_sequential with user_uuid: {type(user_uuid)}, agent_ids: {agent_ids}")
                 results = await self._execute_sequential(user_uuid, goal, agent_ids, stream_callback)
             elif collaboration_mode == CollaborationMode.PARALLEL:
+                logger.info(f"Calling _execute_parallel with user_uuid: {type(user_uuid)}, agent_ids: {agent_ids}")
                 results = await self._execute_parallel(user_uuid, goal, agent_ids, stream_callback)
             elif collaboration_mode == CollaborationMode.HIERARCHICAL:
+                logger.info(f"Calling _execute_hierarchical with user_uuid: {type(user_uuid)}, agent_ids: {agent_ids}")
                 results = await self._execute_hierarchical(user_uuid, goal, agent_ids, stream_callback)
             else:
+                logger.info(f"Calling _execute_sequential (default) with user_uuid: {type(user_uuid)}, agent_ids: {agent_ids}")
                 results = await self._execute_sequential(user_uuid, goal, agent_ids, stream_callback)
+            logger.info(f"Execute method completed")
             
             # Complete execution
             duration_ms = int((datetime.utcnow() - start_time).total_seconds() * 1000)
@@ -220,6 +226,7 @@ class MultiAgentOrchestrator:
         stream_callback: Optional[callable] = None,
     ) -> Dict[str, Any]:
         """Execute tasks sequentially with each agent"""
+        logger.info(f"_execute_sequential called with user_uuid: {type(user_uuid)}, goal: {goal}, agent_ids: {agent_ids}")
         results = {"steps": [], "final_output": ""}
         context = {"goal": goal, "previous_results": []}
         
