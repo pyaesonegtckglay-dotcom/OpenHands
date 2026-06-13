@@ -39,6 +39,7 @@ export default [
       route("org", "routes/manage-org.tsx"),
     ]),
     route("conversations/:conversationId", "routes/conversation.tsx"),
+    route("multi-agent", "routes/multi-agent.tsx"),
     route("oauth/device/verify", "routes/device-verify.tsx"),
   ]),
   // Shared routes that don't require authentication
