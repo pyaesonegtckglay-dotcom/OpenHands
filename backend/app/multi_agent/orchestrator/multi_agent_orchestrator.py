@@ -153,13 +153,13 @@ class MultiAgentOrchestrator:
         try:
             # Execute based on collaboration mode
             if collaboration_mode == CollaborationMode.SEQUENTIAL:
-                results = await self._execute_sequential(user_id, goal, agent_ids, stream_callback)
+                results = await self._execute_sequential(user_uuid, goal, agent_ids, stream_callback)
             elif collaboration_mode == CollaborationMode.PARALLEL:
-                results = await self._execute_parallel(user_id, goal, agent_ids, stream_callback)
+                results = await self._execute_parallel(user_uuid, goal, agent_ids, stream_callback)
             elif collaboration_mode == CollaborationMode.HIERARCHICAL:
-                results = await self._execute_hierarchical(user_id, goal, agent_ids, stream_callback)
+                results = await self._execute_hierarchical(user_uuid, goal, agent_ids, stream_callback)
             else:
-                results = await self._execute_sequential(user_id, goal, agent_ids, stream_callback)
+                results = await self._execute_sequential(user_uuid, goal, agent_ids, stream_callback)
             
             # Complete execution
             duration_ms = int((datetime.utcnow() - start_time).total_seconds() * 1000)
@@ -173,7 +173,7 @@ class MultiAgentOrchestrator:
                 
                 await conn.execute(
                     "UPDATE agent_teams SET status = $1, results = $2, completed_at = NOW() WHERE id = $3",
-                    AgentStatus.COMPLETED.value, results, uuid.UUID(team_id)
+                    AgentStatus.COMPLETED.value, results, team_uuid
                 )
             
             if stream_callback:
@@ -210,7 +210,7 @@ class MultiAgentOrchestrator:
     
     async def _execute_sequential(
         self,
-        user_id: str,
+        user_uuid,
         goal: str,
         agent_ids: List[str],
         stream_callback: Optional[callable] = None,
@@ -266,7 +266,7 @@ class MultiAgentOrchestrator:
     
     async def _execute_parallel(
         self,
-        user_id: str,
+        user_uuid,
         goal: str,
         agent_ids: List[str],
         stream_callback: Optional[callable] = None,
@@ -320,14 +320,14 @@ class MultiAgentOrchestrator:
     
     async def _execute_hierarchical(
         self,
-        user_id: str,
+        user_uuid,
         goal: str,
         agent_ids: List[str],
         stream_callback: Optional[callable] = None,
     ) -> Dict[str, Any]:
         """Execute with supervisor/worker hierarchy"""
         if len(agent_ids) < 2:
-            return await self._execute_sequential(user_id, goal, agent_ids, stream_callback)
+            return await self._execute_sequential(user_uuid, goal, agent_ids, stream_callback)
         
         supervisor_id = agent_ids[0]
         worker_ids = agent_ids[1:]
@@ -360,7 +360,7 @@ class MultiAgentOrchestrator:
         await agent_manager.update_agent_status(supervisor_id, AgentStatus.COMPLETED)
         
         # Workers execute in parallel
-        worker_results = await self._execute_parallel(user_id, goal, worker_ids, stream_callback)
+        worker_results = await self._execute_parallel(user_uuid, goal, worker_ids, stream_callback)
         
         return {
             "supervisor_result": supervisor_result,
@@ -378,14 +378,14 @@ class MultiAgentOrchestrator:
                 return dict(row)
             return None
     
-    async def list_teams(self, user_id: str) -> List[Dict[str, Any]]:
+    async def list_teams(self, user_uuid) -> List[Dict[str, Any]]:
         """List teams for a user"""
         from app.database.connection import get_pool
         pool = await get_pool()
         async with pool.acquire() as conn:
             rows = await conn.fetch(
                 "SELECT * FROM agent_teams WHERE user_id = $1 ORDER BY created_at DESC",
-                uuid.UUID(user_id)
+                user_uuid
             )
             return [dict(row) for row in rows]
     
@@ -402,14 +402,14 @@ class MultiAgentOrchestrator:
                 return dict(row)
             return None
     
-    async def list_executions(self, user_id: str, limit: int = 20) -> List[Dict[str, Any]]:
+    async def list_executions(self, user_uuid, limit: int = 20) -> List[Dict[str, Any]]:
         """List executions for a user"""
         from app.database.connection import get_pool
         pool = await get_pool()
         async with pool.acquire() as conn:
             rows = await conn.fetch(
                 "SELECT * FROM multi_agent_executions WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2",
-                uuid.UUID(user_id), limit
+                user_uuid, limit
             )
             return [dict(row) for row in rows]
     

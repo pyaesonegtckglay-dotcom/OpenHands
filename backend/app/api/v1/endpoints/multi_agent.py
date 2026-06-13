@@ -55,7 +55,8 @@ async def create_team(
 async def list_teams(current_user: dict = Depends(get_current_user)):
     """List all teams for current user"""
     try:
-        teams = await orchestrator.list_teams(str(current_user["id"]))
+        user_uuid = uuid.UUID(current_user["id"])
+        teams = await orchestrator.list_teams(user_uuid)
         return {"teams": teams, "count": len(teams)}
     except Exception as e:
         logger.error(f"List teams error: {e}")
@@ -66,12 +67,14 @@ async def list_teams(current_user: dict = Depends(get_current_user)):
 async def get_team(team_id: str, current_user: dict = Depends(get_current_user)):
     """Get team details"""
     try:
-        team = await orchestrator.get_team(team_id)
+        user_uuid = uuid.UUID(current_user["id"])
+        team_uuid = uuid.UUID(team_id)
+        team = await orchestrator.get_team(team_uuid)
         if not team:
             raise HTTPException(status_code=404, detail="Team not found")
         
         # Get agents in team
-        agents = await agent_manager.list_agents(str(current_user["id"]), team_id)
+        agents = await agent_manager.list_agents(user_uuid, team_uuid)
         
         return {"team": team, "agents": agents}
     except HTTPException:
@@ -226,7 +229,8 @@ async def list_executions(
 ):
     """List multi-agent executions"""
     try:
-        executions = await orchestrator.list_executions(str(current_user["id"]), limit)
+        user_uuid = uuid.UUID(current_user["id"])
+        executions = await orchestrator.list_executions(user_uuid, limit)
         return {"executions": executions, "count": len(executions)}
     except Exception as e:
         logger.error(f"List executions error: {e}")
