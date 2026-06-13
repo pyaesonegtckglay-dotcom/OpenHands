@@ -66,13 +66,18 @@ class MultiAgentService {
         `${this.baseURL}/multi-agent/agents/types`
       );
       return data?.agent_types || [];
-    } catch {
+    } catch (err) {
+      console.warn("Using fallback agent types due to API error:", err);
       // Return default agent types if API fails
       return [
-        { type: "researcher", name: "Researcher", description: "Web research and data gathering", capabilities: ["web_search", "analysis"], tools: ["web_search"] },
-        { type: "coder", name: "Coder", description: "Code generation and debugging", capabilities: ["coding", "refactoring"], tools: ["code_editor"] },
-        { type: "writer", name: "Writer", description: "Content creation and editing", capabilities: ["writing", "editing"], tools: ["text_editor"] },
-        { type: "planner", name: "Planner", description: "Task planning and coordination", capabilities: ["planning", "coordination"], tools: ["task_manager"] },
+        { type: "planner", name: "Planner Agent", description: "Breaks down complex goals into actionable steps", capabilities: ["planning", "goal_decomposition"], tools: ["reasoning"] },
+        { type: "researcher", name: "Researcher Agent", description: "Gathers and synthesizes information", capabilities: ["web_search", "data_analysis"], tools: ["web_search"] },
+        { type: "coder", name: "Coder Agent", description: "Writes, reviews, and refactors code", capabilities: ["coding", "debugging"], tools: ["code_editor"] },
+        { type: "reviewer", name: "Reviewer Agent", description: "Reviews and provides feedback", capabilities: ["code_review", "quality_assurance"], tools: ["reasoning"] },
+        { type: "executor", name: "Executor Agent", description: "Executes tasks and coordinates tools", capabilities: ["task_execution", "tool_use"], tools: ["python_executor"] },
+        { type: "synthesizer", name: "Synthesizer Agent", description: "Combines outputs into cohesive results", capabilities: ["synthesis", "integration"], tools: ["reasoning"] },
+        { type: "coordinator", name: "Coordinator Agent", description: "Orchestrates multiple agents", capabilities: ["coordination", "delegation"], tools: ["reasoning"] },
+        { type: "generalist", name: "Generalist Agent", description: "Handles diverse tasks", capabilities: ["general_purpose", "adaptability"], tools: ["reasoning"] },
       ];
     }
   }

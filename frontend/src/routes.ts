@@ -9,6 +9,8 @@ export default [
   route("login", "routes/login.tsx"),
   route("onboarding", "routes/onboarding-form.tsx"),
   route("information-request", "routes/information-request.tsx"),
+  // Multi-agent standalone (no auth, no shell)
+  route("multi-agent", "routes/multi-agent-standalone.tsx"),
   layout("routes/root-layout.tsx", [
     index("routes/home.tsx"),
     route("accept-tos", "routes/accept-tos.tsx"),
@@ -39,7 +41,6 @@ export default [
       route("org", "routes/manage-org.tsx"),
     ]),
     route("conversations/:conversationId", "routes/conversation.tsx"),
-    route("multi-agent", "routes/multi-agent.tsx"),
     route("oauth/device/verify", "routes/device-verify.tsx"),
   ]),
   // Shared routes that don't require authentication
