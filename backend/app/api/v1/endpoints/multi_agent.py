@@ -166,19 +166,28 @@ async def execute_multi_agent(
         user_uuid = uuid.UUID(current_user["id"])
         logger.info(f"Executing with user_uuid: {user_uuid}")
         
-        result = await orchestrator.execute_goal(
-            user_uuid=user_uuid,
-            goal=goal,
-            agent_types=agent_type_enums,
-            team_id=team_id,
-            collaboration_mode=collaboration,
-        )
-        return result
+        logger.info(f"Calling orchestrator.execute_goal...")
+        try:
+            result = await orchestrator.execute_goal(
+                user_uuid=user_uuid,
+                goal=goal,
+                agent_types=agent_type_enums,
+                team_id=team_id,
+                collaboration_mode=collaboration,
+            )
+            logger.info(f"orchestrator.execute_goal completed successfully")
+            return result
+        except Exception as inner_e:
+            import traceback
+            logger.error(f"Inner error in orchestrator.execute_goal: {inner_e}\n{traceback.format_exc()}")
+            raise
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         import traceback
-        logger.error(f"Execute error: {e}\n{traceback.format_exc()}")
+        logger.error(f"Outer execute error: {e}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
