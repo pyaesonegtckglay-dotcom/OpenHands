@@ -5,7 +5,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import List, Optional, Any
 
-router = APIRouter(prefix="/api", tags=["Conversations"])
+router = APIRouter(prefix="", tags=["Conversations"])
 
 
 class ConversationResponse(BaseModel):

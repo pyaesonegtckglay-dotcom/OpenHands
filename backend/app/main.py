@@ -14,8 +14,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1 import router as api_router
-from app.api.v1.endpoints.options import router as options_router
-from app.api.v1.endpoints.conversations import router as conversations_router
 from app.core.config import settings
 from app.database.connection import init_db, close_pool
 
@@ -80,10 +78,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Routes - include root-level routers BEFORE api_router to avoid prefix conflicts
-app.include_router(options_router)  # /api/options/*
-app.include_router(conversations_router)  # /api/conversations/*
-app.include_router(api_router)  # /api/v1/* (includes /api/v1/settings/*)
+# Routes
+app.include_router(api_router)  # /api/v1/* (includes all endpoints)
 
 
 @app.get("/")

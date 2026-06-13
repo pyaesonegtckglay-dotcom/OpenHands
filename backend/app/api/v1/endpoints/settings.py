@@ -5,7 +5,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
 
-router = APIRouter(prefix="/api/v1", tags=["Settings"])
+router = APIRouter(prefix="", tags=["Settings"])
 
 
 class SettingsResponse(BaseModel):

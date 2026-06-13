@@ -6,7 +6,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import List
 
-router = APIRouter(prefix="/api", tags=["Options"])
+router = APIRouter(prefix="", tags=["Options"])
 
 
 class ModelProvider(BaseModel):
@@ -32,7 +32,7 @@ async def get_models():
             ModelProvider(
                 name="Anthropic",
                 slug="anthropic",
-                models=["claude-sonnet-4-20250514", "claude-opus-4-20250514", "claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022"],
+                models=["claude-sonnet-4-20250514", "claude-opus-4-20250514", "claude-3.5-sonnet-20241022", "claude-3.5-haiku-20241022"],
                 is_verified=True
             ),
             ModelProvider(
