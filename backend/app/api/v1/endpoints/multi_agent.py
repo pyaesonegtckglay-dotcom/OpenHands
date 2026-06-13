@@ -234,18 +234,38 @@ async def execute_multi_agent_stream(
         collaboration = CollaborationMode(collaboration_mode)
         user_uuid = uuid.UUID(current_user["user_id"])
         
+        # Create a queue for events
+        import asyncio
+        event_queue = asyncio.Queue()
+        
         async def stream_callback(event):
-            yield f"data: {json.dumps(event)}\n\n"
+            """Collect events from execution"""
+            await event_queue.put(event)
         
         try:
-            result = await orchestrator.execute_goal(
-                user_uuid=user_uuid,
-                goal=goal,
-                agent_types=agent_type_enums,
-                team_id=team_id,
-                collaboration_mode=collaboration,
-                stream_callback=stream_callback,
+            # Start execution in background
+            import asyncio
+            execution_task = asyncio.create_task(
+                orchestrator.execute_goal(
+                    user_uuid=user_uuid,
+                    goal=goal,
+                    agent_types=agent_type_enums,
+                    team_id=team_id,
+                    collaboration_mode=collaboration,
+                    stream_callback=stream_callback,
+                )
             )
+            
+            # Stream events as they come
+            while not execution_task.done() or not event_queue.empty():
+                try:
+                    event = await asyncio.wait_for(event_queue.get(), timeout=1.0)
+                    yield f"data: {json.dumps(event)}\n\n"
+                except asyncio.TimeoutError:
+                    continue
+            
+            # Get final result
+            result = await execution_task
             yield f"data: {json.dumps({'type': 'done', 'result': result})}\n\n"
         except Exception as e:
             yield f"data: {json.dumps({'type': 'error', 'error': str(e)})}\n\n"
