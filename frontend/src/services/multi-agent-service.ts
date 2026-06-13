@@ -56,6 +56,7 @@ export interface ExecutionEvent {
 
 class MultiAgentService {
   private baseURL = "/api/v1";
+  private backendURL = "https://manusai-backend.onrender.com/api/v1";
   private accessToken: string | null = null;
 
   constructor() {
@@ -69,6 +70,13 @@ class MultiAgentService {
           this.accessToken = e.newValue;
         }
       });
+      
+      // Set backend URL from env if available
+      const envBackend = import.meta.env.VITE_BACKEND_BASE_URL;
+      if (envBackend) {
+        const protocol = window.location.protocol || "https:";
+        this.backendURL = `${protocol}//${envBackend}/api/v1`;
+      }
     }
   }
 
@@ -77,6 +85,11 @@ class MultiAgentService {
       this.accessToken = localStorage.getItem("access_token");
     }
     return this.accessToken ? { Authorization: `Bearer ${this.accessToken}` } : {};
+  }
+
+  private getRequestURL(path: string): string {
+    // Use absolute URL for multi-agent service to ensure backend calls work
+    return `${this.backendURL}${path}`;
   }
 
   /**
@@ -92,7 +105,7 @@ class MultiAgentService {
   async getAgentTypes(): Promise<AgentType[]> {
     try {
       const { data } = await openHands.get<{ agent_types: AgentType[] }>(
-        `${this.baseURL}/multi-agent/agents/types`,
+        this.getRequestURL("/multi-agent/agents/types"),
         { headers: this.getAuthHeaders() }
       );
       return data?.agent_types || [];
@@ -117,7 +130,7 @@ class MultiAgentService {
    */
   async login(email: string, password: string): Promise<{ access_token: string; user_id: string }> {
     const { data } = await openHands.post<{ access_token: string; user_id: string }>(
-      `${this.baseURL}/auth/login`,
+      this.getRequestURL("/auth/login"),
       { email, password }
     );
     if (data.access_token) {
@@ -132,7 +145,7 @@ class MultiAgentService {
    */
   async register(email: string, password: string, username: string): Promise<{ access_token: string; user_id: string }> {
     const { data } = await openHands.post<{ access_token: string; user_id: string }>(
-      `${this.baseURL}/auth/register`,
+      this.getRequestURL("/auth/register"),
       { email, password, username }
     );
     if (data.access_token) {
@@ -164,7 +177,7 @@ class MultiAgentService {
   }): Promise<Team> {
     const { goal, agent_types, collaboration_mode = "sequential", max_parallel = 3, team_name } = params;
     const { data } = await openHands.post<Team>(
-      `${this.baseURL}/multi-agent/teams/create`,
+      this.getRequestURL("/multi-agent/teams/create"),
       null,
       {
         params: {
@@ -185,7 +198,7 @@ class MultiAgentService {
    */
   async listTeams(): Promise<Team[]> {
     const { data } = await openHands.get<{ teams: Team[]; count: number }>(
-      `${this.baseURL}/multi-agent/teams`,
+      this.getRequestURL("/multi-agent/teams"),
       { headers: this.getAuthHeaders() }
     );
     return data.teams;
@@ -196,7 +209,7 @@ class MultiAgentService {
    */
   async getTeam(teamId: string): Promise<Team> {
     const { data } = await openHands.get<Team>(
-      `${this.baseURL}/multi-agent/teams/${teamId}`,
+      this.getRequestURL(`/multi-agent/teams/${teamId}`),
       { headers: this.getAuthHeaders() }
     );
     return data;
@@ -213,7 +226,7 @@ class MultiAgentService {
   }): Promise<Execution> {
     const { goal, agent_types, team_id, collaboration_mode = "sequential" } = params;
     const { data } = await openHands.post<Execution>(
-      `${this.baseURL}/multi-agent/execute`,
+      this.getRequestURL("/multi-agent/execute"),
       null,
       {
         params: {
@@ -254,12 +267,8 @@ class MultiAgentService {
       searchParams.set("team_id", team_id);
     }
 
-    const baseURL = import.meta.env.VITE_BACKEND_BASE_URL || window?.location.host || "";
-    const protocol = window?.location.protocol || "https:";
-    const host = baseURL.startsWith("http") ? baseURL : `${protocol}//${baseURL}`;
-
     const response = await fetch(
-      `${host}/api/v1/multi-agent/execute/stream?${searchParams}`,
+      `${this.backendURL}/multi-agent/execute/stream?${searchParams}`,
       {
         headers: {
           Authorization: `Bearer ${this.accessToken || localStorage.getItem("access_token")}`,
@@ -314,7 +323,7 @@ class MultiAgentService {
    */
   async listExecutions(limit = 20): Promise<Execution[]> {
     const { data } = await openHands.get<{ executions: Execution[]; count: number }>(
-      `${this.baseURL}/multi-agent/executions`,
+      this.getRequestURL("/multi-agent/executions"),
       { params: { limit }, headers: this.getAuthHeaders() }
     );
     return data.executions;
@@ -325,7 +334,7 @@ class MultiAgentService {
    */
   async getExecution(executionId: string): Promise<Execution> {
     const { data } = await openHands.get<Execution>(
-      `${this.baseURL}/multi-agent/executions/${executionId}`,
+      this.getRequestURL(`/multi-agent/executions/${executionId}`),
       { headers: this.getAuthHeaders() }
     );
     return data;

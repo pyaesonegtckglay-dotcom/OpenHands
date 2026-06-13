@@ -1,7 +1,9 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
 
+const BACKEND_URL = "https://manusai-backend.onrender.com";
+
 export const openHands = axios.create({
-  baseURL: `${window.location.protocol}//${import.meta.env.VITE_BACKEND_BASE_URL || window?.location.host}`,
+  baseURL: BACKEND_URL,
 });
 
 // Helper function to check if a response contains an email verification error
