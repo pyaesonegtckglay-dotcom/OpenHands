@@ -26433,5 +26433,39 @@
     "ca": "Acció",
     "tr": "Eylem",
     "uk": "Дія"
+  },
+  "COMMON$ACTIVITY": {
+    "en": "Activity",
+    "ja": "アクティビティ",
+    "zh-CN": "活动",
+    "zh-TW": "活動",
+    "ko-KR": "활동",
+    "no": "Aktivitet",
+    "it": "Attività",
+    "pt": "Atividade",
+    "es": "Actividad",
+    "ar": "نشاط",
+    "de": "Aktivität",
+    "fr": "Activité",
+    "tr": "Etkinlik",
+    "uk": "Діяльність",
+    "ca": "Activitat"
+  },
+  "SHELL_RIGHT_PANEL$START_CONVERSATION": {
+    "en": "Start a conversation to see activity",
+    "ja": "アクティビティを表示するには会話を開始してください",
+    "zh-CN": "开始对话以查看活动",
+    "zh-TW": "開始對話以查看活動",
+    "ko-KR": "활동을 보려면 대화를 시작하세요",
+    "no": "Start en samtale for å se aktivitet",
+    "it": "Avvia una conversazione per vedere l'attività",
+    "pt": "Inicie uma conversa para ver a atividade",
+    "es": "Inicia una conversación para ver la actividad",
+    "ar": "ابدأ محادثة لرؤية النشاط",
+    "de": "Starten Sie ein Gespräch, um die Aktivität zu sehen",
+    "fr": "Commencez une conversation pour voir l'activité",
+    "tr": "Etkinliği görmek için bir konuşma başlatın",
+    "uk": "Почніть розмову, щоб побачити активність",
+    "ca": "Inicia una conversa per veure l'activitat"
   }
 }

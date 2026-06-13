@@ -6,6 +6,9 @@ import { useAgentStore } from "#/stores/agent-store";
 import { AgentState } from "#/types/agent-state";
 import { ConversationTabs } from "../conversation/conversation-tabs/conversation-tabs";
 import { ConversationTabContent } from "../conversation/conversation-tabs/conversation-tab-content/conversation-tab-content";
+import { useSafeConversationId } from "#/hooks/use-conversation-id";
+import { I18nKey } from "#/i18n/declaration";
+import { useTranslation } from "react-i18next";
 
 function getStatusLabel(state: AgentState): string {
   switch (state) {
@@ -49,12 +52,15 @@ function getStatusColor(state: AgentState): string {
 }
 
 export function ShellRightPanel() {
+  const { t } = useTranslation();
   const { rightPanelOpen, toggleRightPanel } = useAppShellStore();
   const { curAgentState } = useAgentStore();
+  const { conversationId } = useSafeConversationId();
 
   const statusLabel = getStatusLabel(curAgentState);
   const statusColor = getStatusColor(curAgentState);
   const isActive = curAgentState === AgentState.RUNNING;
+  const hasConversation = !!conversationId;
 
   return (
     <div className="relative flex items-stretch">
@@ -115,7 +121,7 @@ export function ShellRightPanel() {
           <div className="flex items-center gap-2">
             <Activity size={15} className="text-[var(--text-secondary)]" />
             <span className="text-[13px] font-semibold text-[var(--text-primary)]">
-              Activity
+              {t(I18nKey.COMMON$ACTIVITY)}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -131,15 +137,25 @@ export function ShellRightPanel() {
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="px-3 pt-3 flex-shrink-0">
-          <ConversationTabs />
-        </div>
+        {/* Tabs - only render when in a conversation */}
+        {hasConversation ? (
+          <>
+            <div className="px-3 pt-3 flex-shrink-0">
+              <ConversationTabs />
+            </div>
 
-        {/* Tab Content */}
-        <div className="flex-1 overflow-hidden px-3 pb-3">
-          <ConversationTabContent />
-        </div>
+            {/* Tab Content */}
+            <div className="flex-1 overflow-hidden px-3 pb-3">
+              <ConversationTabContent />
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center p-4">
+            <p className="text-[13px] text-[var(--text-tertiary)] text-center">
+              {t(I18nKey.SHELL_RIGHT_PANEL$START_CONVERSATION)}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
