@@ -25,7 +25,7 @@ class MultiAgentOrchestrator:
     
     async def create_team(
         self,
-        user_id: str,
+        user_uuid,
         goal: str,
         agent_types: List[AgentType],
         collaboration_mode: CollaborationMode = CollaborationMode.SEQUENTIAL,
@@ -35,7 +35,6 @@ class MultiAgentOrchestrator:
         """Create a team of agents"""
         team_id = str(uuid.uuid4())
         team_name = team_name or f"Team for: {goal[:50]}"
-        user_uuid = uuid.UUID(user_id)
         
         from app.database.connection import get_pool
         pool = await get_pool()
@@ -57,9 +56,9 @@ class MultiAgentOrchestrator:
         agent_ids = []
         for agent_type in agent_types:
             result = await agent_manager.create_agent(
-                user_id=user_id,
+                user_uuid=user_uuid,
                 agent_type=agent_type,
-                team_id=team_id,
+                team_uuid=uuid.UUID(team_id),
             )
             agent_ids.append(result["agent_id"])
         
@@ -74,7 +73,7 @@ class MultiAgentOrchestrator:
     
     async def execute_goal(
         self,
-        user_id: str,
+        user_uuid,
         goal: str,
         agent_types: Optional[List[AgentType]] = None,
         team_id: Optional[str] = None,
@@ -90,7 +89,6 @@ class MultiAgentOrchestrator:
             agent_types = [AgentType.GENERALIST]
         
         # Create or use existing team
-        user_uuid = uuid.UUID(user_id)
         if team_id:
             team_uuid = uuid.UUID(team_id)
             team_info = await self.get_team(team_uuid)
@@ -100,7 +98,7 @@ class MultiAgentOrchestrator:
             agent_ids = [str(a["id"]) for a in agents]
         else:
             team_result = await self.create_team(
-                user_id=user_id,
+                user_uuid=user_uuid,
                 goal=goal,
                 agent_types=agent_types,
                 collaboration_mode=collaboration_mode,
@@ -111,14 +109,15 @@ class MultiAgentOrchestrator:
         # Store execution
         from app.database.connection import get_pool
         pool = await get_pool()
+        team_uuid = uuid.UUID(team_id)
         async with pool.acquire() as conn:
             await conn.execute("""
                 INSERT INTO multi_agent_executions (id, user_id, team_id, execution_id, goal, status, total_agents, active_agents, started_at)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
             """,
                 uuid.uuid4(),
-                uuid.UUID(user_id),
-                uuid.UUID(team_id),
+                user_uuid,
+                team_uuid,
                 execution_id,
                 goal,
                 "running",

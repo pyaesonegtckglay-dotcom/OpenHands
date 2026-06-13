@@ -33,9 +33,10 @@ async def create_team(
         agent_type_list = [at.strip() for at in agent_types.split(",")]
         agent_type_enums = [AgentType(at) for at in agent_type_list]
         collaboration = CollaborationMode(collaboration_mode)
+        user_uuid = uuid.UUID(current_user["id"])
         
         result = await orchestrator.create_team(
-            user_id=str(current_user["id"]),
+            user_uuid=user_uuid,
             goal=goal,
             agent_types=agent_type_enums,
             collaboration_mode=collaboration,
@@ -158,9 +159,10 @@ async def execute_multi_agent(
             agent_type_list = [at.strip() for at in agent_types.split(",")]
             agent_type_enums = [AgentType(at) for at in agent_type_list]
         collaboration = CollaborationMode(collaboration_mode)
+        user_uuid = uuid.UUID(current_user["id"])
         
         result = await orchestrator.execute_goal(
-            user_id=str(current_user["id"]),
+            user_uuid=user_uuid,
             goal=goal,
             agent_types=agent_type_enums,
             team_id=team_id,
@@ -189,13 +191,14 @@ async def execute_multi_agent_stream(
             agent_type_list = [at.strip() for at in agent_types.split(",")]
             agent_type_enums = [AgentType(at) for at in agent_type_list]
         collaboration = CollaborationMode(collaboration_mode)
+        user_uuid = uuid.UUID(current_user["id"])
         
         async def stream_callback(event):
             yield f"data: {json.dumps(event)}\n\n"
         
         try:
             result = await orchestrator.execute_goal(
-                user_id=str(current_user["id"]),
+                user_uuid=user_uuid,
                 goal=goal,
                 agent_types=agent_type_enums,
                 team_id=team_id,
