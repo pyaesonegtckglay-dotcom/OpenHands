@@ -12,5 +12,5 @@ python-multipart==0.0.19
 email-validator==2.2.0
 
 # Phase 4 - Production Hardening
-psutil>=5.9.0
+# psutil>=5.9.0  # Optional - system metrics
 PyJWT>=2.8.0
