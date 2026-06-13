@@ -11,3 +11,12 @@ export function useConversationId() {
 
   return { conversationId };
 }
+
+/**
+ * Safe version of useConversationId that returns null instead of throwing
+ * Use this hook in pages that may or may not have a conversationId
+ */
+export function useSafeConversationId(): { conversationId: string | null } {
+  const { conversationId } = useParams<{ conversationId: string }>();
+  return { conversationId: conversationId || null };
+}
