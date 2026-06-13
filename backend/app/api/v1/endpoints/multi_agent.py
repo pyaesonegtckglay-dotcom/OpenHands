@@ -2,6 +2,7 @@
 Multi-Agent Orchestration API Endpoints
 """
 import logging
+import uuid
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from fastapi.responses import StreamingResponse
@@ -103,7 +104,9 @@ async def list_agents(
 ):
     """List agents for current user"""
     try:
-        agents = await agent_manager.list_agents(str(current_user["id"]), team_id)
+        user_uuid = uuid.UUID(current_user["id"])
+        team_uuid = uuid.UUID(team_id) if team_id else None
+        agents = await agent_manager.list_agents(user_uuid, team_uuid)
         return {"agents": agents, "count": len(agents)}
     except Exception as e:
         logger.error(f"List agents error: {e}")

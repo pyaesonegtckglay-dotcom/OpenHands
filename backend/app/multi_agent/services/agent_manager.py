@@ -83,20 +83,20 @@ class AgentManager:
                 return dict(row)
             return None
     
-    async def list_agents(self, user_id: str, team_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    async def list_agents(self, user_uuid, team_uuid=None) -> List[Dict[str, Any]]:
         """List agents for a user"""
         pool = await get_pool()
         async with pool.acquire() as conn:
-            if team_id:
+            if team_uuid:
                 rows = await conn.fetch(
                     "SELECT * FROM agents WHERE user_id = $1 AND team_id = $2 ORDER BY created_at DESC",
-                    uuid.UUID(user_id),
-                    uuid.UUID(team_id)
+                    user_uuid,
+                    team_uuid
                 )
             else:
                 rows = await conn.fetch(
                     "SELECT * FROM agents WHERE user_id = $1 ORDER BY created_at DESC",
-                    uuid.UUID(user_id)
+                    user_uuid
                 )
             return [dict(row) for row in rows]
     

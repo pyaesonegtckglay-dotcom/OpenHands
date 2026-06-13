@@ -90,11 +90,14 @@ class MultiAgentOrchestrator:
             agent_types = [AgentType.GENERALIST]
         
         # Create or use existing team
+        user_uuid = uuid.UUID(user_id)
         if team_id:
-            team_info = await self.get_team(team_id)
+            team_uuid = uuid.UUID(team_id)
+            team_info = await self.get_team(team_uuid)
             if not team_info:
                 raise ValueError(f"Team {team_id} not found")
-            agent_ids = [a["id"] for a in await agent_manager.list_agents(user_id, team_id)]
+            agents = await agent_manager.list_agents(user_uuid, team_uuid)
+            agent_ids = [str(a["id"]) for a in agents]
         else:
             team_result = await self.create_team(
                 user_id=user_id,
@@ -360,12 +363,12 @@ class MultiAgentOrchestrator:
             "final_output": f"Hierarchical execution with supervisor and {len(worker_ids)} workers completed",
         }
     
-    async def get_team(self, team_id: str) -> Optional[Dict[str, Any]]:
+    async def get_team(self, team_uuid) -> Optional[Dict[str, Any]]:
         """Get team details"""
         from app.database.connection import get_pool
         pool = await get_pool()
         async with pool.acquire() as conn:
-            row = await conn.fetchrow("SELECT * FROM agent_teams WHERE id = $1", uuid.UUID(team_id))
+            row = await conn.fetchrow("SELECT * FROM agent_teams WHERE id = $1", team_uuid)
             if row:
                 return dict(row)
             return None
