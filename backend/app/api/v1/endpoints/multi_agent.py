@@ -20,7 +20,7 @@ router = APIRouter(prefix="/multi-agent", tags=["multi-agent"])
 @router.post("/teams/create")
 async def create_team(
     goal: str,
-    agent_types: List[str],
+    agent_types: str,  # Comma-separated list
     collaboration_mode: str = "sequential",
     max_parallel: int = 3,
     team_name: Optional[str] = None,
@@ -28,7 +28,9 @@ async def create_team(
 ):
     """Create a team of agents"""
     try:
-        agent_type_enums = [AgentType(at) for at in agent_types]
+        # Parse comma-separated agent types
+        agent_type_list = [at.strip() for at in agent_types.split(",")]
+        agent_type_enums = [AgentType(at) for at in agent_type_list]
         collaboration = CollaborationMode(collaboration_mode)
         
         result = await orchestrator.create_team(
@@ -141,14 +143,17 @@ async def get_agent_messages(
 @router.post("/execute")
 async def execute_multi_agent(
     goal: str,
-    agent_types: Optional[List[str]] = None,
+    agent_types: Optional[str] = None,  # Comma-separated list
     team_id: Optional[str] = None,
     collaboration_mode: str = "sequential",
     current_user: dict = Depends(get_current_user),
 ):
     """Execute a goal using multiple agents"""
     try:
-        agent_type_enums = [AgentType(at) for at in agent_types] if agent_types else None
+        agent_type_enums = None
+        if agent_types:
+            agent_type_list = [at.strip() for at in agent_types.split(",")]
+            agent_type_enums = [AgentType(at) for at in agent_type_list]
         collaboration = CollaborationMode(collaboration_mode)
         
         result = await orchestrator.execute_goal(
@@ -169,14 +174,17 @@ async def execute_multi_agent(
 @router.post("/execute/stream")
 async def execute_multi_agent_stream(
     goal: str,
-    agent_types: Optional[List[str]] = None,
+    agent_types: Optional[str] = None,  # Comma-separated list
     team_id: Optional[str] = None,
     collaboration_mode: str = "sequential",
     current_user: dict = Depends(get_current_user),
 ):
     """Execute a goal using multiple agents with streaming response"""
     async def event_generator():
-        agent_type_enums = [AgentType(at) for at in agent_types] if agent_types else None
+        agent_type_enums = None
+        if agent_types:
+            agent_type_list = [at.strip() for at in agent_types.split(",")]
+            agent_type_enums = [AgentType(at) for at in agent_type_list]
         collaboration = CollaborationMode(collaboration_mode)
         
         async def stream_callback(event):
