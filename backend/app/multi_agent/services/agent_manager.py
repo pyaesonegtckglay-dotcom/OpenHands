@@ -143,9 +143,9 @@ class AgentManager:
                 uuid.UUID(agent_id),
                 task.task_id,
                 task.description,
-                task.context,
+                json.dumps(task.context),
                 task.priority,
-                task.dependencies,
+                json.dumps(task.dependencies),
                 task.expected_output,
                 "assigned"
             )
@@ -169,11 +169,11 @@ class AgentManager:
             await conn.execute(
                 """UPDATE agent_tasks SET status = $1, result = $2, completed_at = NOW() 
                    WHERE task_id = $3 AND agent_id = $4""",
-                "completed", result, task_id, uuid.UUID(agent_id)
+                "completed", json.dumps(result), task_id, uuid.UUID(agent_id)
             )
             await conn.execute(
                 "UPDATE agents SET current_task = NULL, status = $1, results = $2, updated_at = NOW() WHERE id = $3",
-                AgentStatus.IDLE.value, result, uuid.UUID(agent_id)
+                AgentStatus.IDLE.value, json.dumps(result), uuid.UUID(agent_id)
             )
         
         # Update memory
@@ -200,8 +200,8 @@ class AgentManager:
                 message.recipient_id,
                 message.role.value,
                 message.content,
-                message.attachments,
-                message.metadata
+                json.dumps(message.attachments),
+                json.dumps(message.metadata)
             )
         
         # Update memory

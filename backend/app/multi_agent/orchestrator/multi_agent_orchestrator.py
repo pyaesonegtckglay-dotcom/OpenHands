@@ -5,6 +5,7 @@ Coordinates multiple agents to accomplish complex goals
 import logging
 import uuid
 import asyncio
+import json
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 from app.multi_agent.types import (
@@ -187,11 +188,11 @@ class MultiAgentOrchestrator:
                     UPDATE multi_agent_executions 
                     SET status = $1, completed_agents = $2, progress = 1.0, results = $3, completed_at = NOW(), duration_ms = $4
                     WHERE execution_id = $5
-                """, "completed", len(agent_ids), results, duration_ms, execution_id)
+                """, "completed", len(agent_ids), json.dumps(results), duration_ms, execution_id)
                 
                 await conn.execute(
                     "UPDATE agent_teams SET status = $1, results = $2, completed_at = NOW() WHERE id = $3",
-                    AgentStatus.COMPLETED.value, results, team_uuid
+                    AgentStatus.COMPLETED.value, json.dumps(results), team_uuid
                 )
             
             if stream_callback:
