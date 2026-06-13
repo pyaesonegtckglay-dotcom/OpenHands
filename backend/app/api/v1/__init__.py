@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, chat, status, config
+from app.api.v1.endpoints import auth, chat, status, config, options
 from app.api.v1.endpoints.cognitive import cognitive_router, planner_router
 from app.api.v1.endpoints.taskgraph import taskgraph_router
 from app.api.v1.endpoints.stream import stream_router
@@ -15,6 +15,9 @@ router.include_router(status.router)
 
 # Web client config (needed by frontend)
 router.include_router(config.router)
+
+# Options endpoints for frontend compatibility
+router.include_router(options.router)
 
 # Phase 1 routes (additive)
 router.include_router(cognitive_router)
