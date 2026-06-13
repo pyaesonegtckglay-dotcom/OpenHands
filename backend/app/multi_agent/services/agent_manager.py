@@ -2,6 +2,7 @@
 Agent Manager Service
 Handles agent lifecycle, task assignment, and state management
 """
+import json
 import logging
 import uuid
 from datetime import datetime
@@ -60,8 +61,8 @@ class AgentManager:
                 model or config.model,
                 temperature,
                 max_tokens,
-                config.capabilities,
-                config.tools,
+                json.dumps(config.capabilities),
+                json.dumps(config.tools),
                 config.system_prompt,
                 AgentStatus.IDLE.value
             )
