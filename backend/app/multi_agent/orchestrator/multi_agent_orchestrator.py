@@ -35,6 +35,7 @@ class MultiAgentOrchestrator:
         """Create a team of agents"""
         team_id = str(uuid.uuid4())
         team_name = team_name or f"Team for: {goal[:50]}"
+        user_uuid = uuid.UUID(user_id)
         
         from app.database.connection import get_pool
         pool = await get_pool()
@@ -44,7 +45,7 @@ class MultiAgentOrchestrator:
                 VALUES ($1, $2, $3, $4, $5, $6, $7)
             """,
                 uuid.UUID(team_id),
-                uuid.UUID(user_id),
+                user_uuid,
                 team_name,
                 goal,
                 collaboration_mode.value,
@@ -110,7 +111,7 @@ class MultiAgentOrchestrator:
         async with pool.acquire() as conn:
             await conn.execute("""
                 INSERT INTO multi_agent_executions (id, user_id, team_id, execution_id, goal, status, total_agents, active_agents, started_at)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
             """,
                 uuid.uuid4(),
                 uuid.UUID(user_id),
@@ -120,7 +121,6 @@ class MultiAgentOrchestrator:
                 "running",
                 len(agent_ids),
                 len(agent_ids),
-                start_time
             )
         
         self._active_executions[execution_id] = {

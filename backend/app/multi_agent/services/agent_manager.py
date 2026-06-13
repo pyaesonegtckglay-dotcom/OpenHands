@@ -41,13 +41,14 @@ class AgentManager:
         
         pool = await get_pool()
         async with pool.acquire() as conn:
+            team_uuid = uuid.UUID(team_id) if team_id else None
             await conn.execute("""
                 INSERT INTO agents (id, user_id, team_id, name, agent_type, description, model, temperature, max_tokens, capabilities, tools, system_prompt, status)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
             """, 
                 uuid.UUID(agent_id),
                 uuid.UUID(user_id),
-                uuid.UUID(team_id) if team_id else None,
+                team_uuid,
                 agent_name,
                 agent_type.value,
                 config.description,
