@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import auth, chat, status, config, options, conversations
 from app.api.v1.endpoints.settings import router as settings_router
 from app.api.v1.endpoints.profiles import router as profiles_router
+from app.api.v1.endpoints.app_conversations import router as app_conversations_router
 from app.api.v1.endpoints.cognitive import cognitive_router, planner_router
 from app.api.v1.endpoints.taskgraph import taskgraph_router
 from app.api.v1.endpoints.stream import stream_router
@@ -23,6 +24,7 @@ router.include_router(options.router)  # /api/v1/options/*
 router.include_router(settings_router)  # /api/v1/settings/*
 router.include_router(profiles_router)  # /api/v1/settings/profiles/*
 router.include_router(conversations.router)  # /api/v1/conversations/*
+router.include_router(app_conversations_router)  # /api/v1/app-conversations/*
 
 # Phase 1 routes (additive)
 router.include_router(cognitive_router)
