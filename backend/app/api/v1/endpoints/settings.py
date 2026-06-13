@@ -1,11 +1,11 @@
 """
 Settings endpoints for frontend compatibility.
 """
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
 
-router = APIRouter(prefix="/settings", tags=["Settings"])
+router = APIRouter(prefix="/api/v1", tags=["Settings"])
 
 
 class SettingsResponse(BaseModel):
@@ -42,7 +42,7 @@ class SettingsSchemaResponse(BaseModel):
     properties: Dict[str, Any] = {}
 
 
-@router.get("", response_model=SettingsResponse)
+@router.get("/settings", response_model=SettingsResponse)
 async def get_settings():
     """
     Get current user settings.
@@ -51,7 +51,7 @@ async def get_settings():
     return SettingsResponse()
 
 
-@router.get("/agent-schema", response_model=SettingsSchemaResponse)
+@router.get("/settings/agent-schema", response_model=SettingsSchemaResponse)
 async def get_agent_schema():
     """
     Get agent settings schema.
@@ -60,7 +60,7 @@ async def get_agent_schema():
     return SettingsSchemaResponse()
 
 
-@router.get("/conversation-schema", response_model=SettingsSchemaResponse)
+@router.get("/settings/conversation-schema", response_model=SettingsSchemaResponse)
 async def get_conversation_schema():
     """
     Get conversation settings schema.
@@ -69,7 +69,7 @@ async def get_conversation_schema():
     return SettingsSchemaResponse()
 
 
-@router.post("")
+@router.post("/settings")
 async def save_settings():
     """
     Save settings.

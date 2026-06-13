@@ -81,11 +81,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Routes
-app.include_router(api_router)
-app.include_router(options_router)
-app.include_router(settings_router)
-app.include_router(conversations_router)
+# Routes - include root-level routers BEFORE api_router to avoid prefix conflicts
+app.include_router(options_router)  # /api/options/*
+app.include_router(conversations_router)  # /api/conversations/*
+app.include_router(settings_router)  # /settings/*
+app.include_router(api_router)  # /api/v1/*
 
 
 @app.get("/")
