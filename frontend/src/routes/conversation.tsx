@@ -115,14 +115,17 @@ function AppContent() {
       <EventHandler>
         <div
           data-testid="app-route"
-          className="p-3 md:p-0 flex flex-col h-full gap-3"
+          className="flex flex-col h-full overflow-hidden"
         >
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4.5 pt-2 lg:pt-0">
+          {/* Slim top bar — conversation name + status only */}
+          <div className="flex items-center justify-between px-4 h-12 border-b border-neutral-800/60 flex-shrink-0">
             <ConversationNameWithStatus />
-            <ConversationTabs />
           </div>
 
-          <ConversationMain />
+          {/* Chat workspace — full height primary area */}
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <ConversationMain />
+          </div>
         </div>
       </EventHandler>
     </ConversationSubscriptionsProvider>
