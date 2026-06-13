@@ -18,6 +18,30 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/multi-agent", tags=["multi-agent"])
 
 
+@router.get("/agents/types")
+async def get_agent_types(current_user: dict = Depends(get_current_user)):
+    """Get available agent types"""
+    try:
+        from app.multi_agent.services.agent_registry import agent_registry
+        agents = agent_registry.list_all()
+        return {
+            "agent_types": [
+                {
+                    "type": a.agent_type.value,
+                    "name": a.name,
+                    "description": a.description,
+                    "capabilities": a.capabilities,
+                    "tools": a.tools,
+                }
+                for a in agents
+            ]
+        }
+    except Exception as e:
+        import traceback
+        logger.error(f"Get agent types error: {e}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/teams/create")
 async def create_team(
     goal: str,
@@ -29,11 +53,13 @@ async def create_team(
 ):
     """Create a team of agents"""
     try:
+        logger.info(f"Create team request - user: {current_user}, goal: {goal}")
         # Parse comma-separated agent types
         agent_type_list = [at.strip() for at in agent_types.split(",")]
         agent_type_enums = [AgentType(at) for at in agent_type_list]
         collaboration = CollaborationMode(collaboration_mode)
-        user_uuid = uuid.UUID(current_user["id"])
+        user_uuid = uuid.UUID(current_user["user_id"])
+        logger.info(f"Creating team with user_uuid: {user_uuid}")
         
         result = await orchestrator.create_team(
             user_uuid=user_uuid,
@@ -55,7 +81,7 @@ async def create_team(
 async def list_teams(current_user: dict = Depends(get_current_user)):
     """List all teams for current user"""
     try:
-        user_uuid = uuid.UUID(current_user["id"])
+        user_uuid = uuid.UUID(current_user["user_id"])
         teams = await orchestrator.list_teams(user_uuid)
         return {"teams": teams, "count": len(teams)}
     except Exception as e:
@@ -67,7 +93,7 @@ async def list_teams(current_user: dict = Depends(get_current_user)):
 async def get_team(team_id: str, current_user: dict = Depends(get_current_user)):
     """Get team details"""
     try:
-        user_uuid = uuid.UUID(current_user["id"])
+        user_uuid = uuid.UUID(current_user["user_id"])
         team_uuid = uuid.UUID(team_id)
         team = await orchestrator.get_team(team_uuid)
         if not team:
@@ -108,7 +134,7 @@ async def list_agents(
 ):
     """List agents for current user"""
     try:
-        user_uuid = uuid.UUID(current_user["id"])
+        user_uuid = uuid.UUID(current_user["user_id"])
         team_uuid = uuid.UUID(team_id) if team_id else None
         agents = await agent_manager.list_agents(user_uuid, team_uuid)
         return {"agents": agents, "count": len(agents)}
@@ -163,7 +189,7 @@ async def execute_multi_agent(
             agent_type_list = [at.strip() for at in agent_types.split(",")]
             agent_type_enums = [AgentType(at) for at in agent_type_list]
         collaboration = CollaborationMode(collaboration_mode)
-        user_uuid = uuid.UUID(current_user["id"])
+        user_uuid = uuid.UUID(current_user["user_id"])
         logger.info(f"Executing with user_uuid: {user_uuid}")
         
         logger.info(f"Calling orchestrator.execute_goal...")
@@ -206,7 +232,7 @@ async def execute_multi_agent_stream(
             agent_type_list = [at.strip() for at in agent_types.split(",")]
             agent_type_enums = [AgentType(at) for at in agent_type_list]
         collaboration = CollaborationMode(collaboration_mode)
-        user_uuid = uuid.UUID(current_user["id"])
+        user_uuid = uuid.UUID(current_user["user_id"])
         
         async def stream_callback(event):
             yield f"data: {json.dumps(event)}\n\n"
@@ -241,7 +267,7 @@ async def list_executions(
 ):
     """List multi-agent executions"""
     try:
-        user_uuid = uuid.UUID(current_user["id"])
+        user_uuid = uuid.UUID(current_user["user_id"])
         executions = await orchestrator.list_executions(user_uuid, limit)
         return {"executions": executions, "count": len(executions)}
     except Exception as e:
