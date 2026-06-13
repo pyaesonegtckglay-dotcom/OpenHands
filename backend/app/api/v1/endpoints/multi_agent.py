@@ -157,12 +157,14 @@ async def execute_multi_agent(
 ):
     """Execute a goal using multiple agents"""
     try:
+        logger.info(f"Execute request - user: {current_user}, goal: {goal}, agent_types: {agent_types}")
         agent_type_enums = None
         if agent_types:
             agent_type_list = [at.strip() for at in agent_types.split(",")]
             agent_type_enums = [AgentType(at) for at in agent_type_list]
         collaboration = CollaborationMode(collaboration_mode)
         user_uuid = uuid.UUID(current_user["id"])
+        logger.info(f"Executing with user_uuid: {user_uuid}")
         
         result = await orchestrator.execute_goal(
             user_uuid=user_uuid,
@@ -175,7 +177,8 @@ async def execute_multi_agent(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Execute error: {e}")
+        import traceback
+        logger.error(f"Execute error: {e}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

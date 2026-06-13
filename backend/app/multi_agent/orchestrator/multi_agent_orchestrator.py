@@ -33,7 +33,9 @@ class MultiAgentOrchestrator:
         team_name: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Create a team of agents"""
+        logger.info(f"Creating team for user: {user_uuid}, goal: {goal}")
         team_id = str(uuid.uuid4())
+        logger.info(f"Team ID: {team_id}")
         team_name = team_name or f"Team for: {goal[:50]}"
         
         from app.database.connection import get_pool
@@ -81,8 +83,10 @@ class MultiAgentOrchestrator:
         stream_callback: Optional[callable] = None,
     ) -> Dict[str, Any]:
         """Execute a goal using multiple agents"""
+        logger.info(f"Starting execution for user: {user_uuid}, goal: {goal}")
         execution_id = f"exec_{uuid.uuid4().hex[:12]}"
         start_time = datetime.utcnow()
+        logger.info(f"Execution ID: {execution_id}")
         
         # Default agent types if not specified
         if not agent_types:

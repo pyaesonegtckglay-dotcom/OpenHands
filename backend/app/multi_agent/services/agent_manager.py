@@ -31,7 +31,9 @@ class AgentManager:
         max_tokens: int = 4096,
     ) -> Dict[str, Any]:
         """Create a new agent instance"""
+        logger.info(f"Creating agent type: {agent_type} for user: {user_uuid}, team: {team_uuid}")
         agent_id = str(uuid.uuid4())
+        logger.info(f"Agent ID: {agent_id}")
         config = agent_registry.get(agent_type)
         
         if not config:
