@@ -89,13 +89,19 @@ class MultiAgentOrchestrator:
             agent_types = [AgentType.GENERALIST]
         
         # Create or use existing team
+        team_id_str = team_id  # Keep as string for return
         if team_id:
             team_uuid = uuid.UUID(team_id)
             team_info = await self.get_team(team_uuid)
             if not team_info:
                 raise ValueError(f"Team {team_id} not found")
             agents = await agent_manager.list_agents(user_uuid, team_uuid)
-            agent_ids = [str(a["id"]) for a in agents]
+            # Get agent IDs from the list - handle UUID vs string
+            agent_ids = []
+            for a in agents:
+                agent_id = a.get("id")
+                if agent_id:
+                    agent_ids.append(str(agent_id))
         else:
             team_result = await self.create_team(
                 user_uuid=user_uuid,
@@ -103,13 +109,13 @@ class MultiAgentOrchestrator:
                 agent_types=agent_types,
                 collaboration_mode=collaboration_mode,
             )
-            team_id = team_result["team_id"]
+            team_id_str = team_result["team_id"]
+            team_uuid = uuid.UUID(team_id_str)
             agent_ids = team_result["agent_ids"]
         
         # Store execution
         from app.database.connection import get_pool
         pool = await get_pool()
-        team_uuid = uuid.UUID(team_id)
         async with pool.acquire() as conn:
             await conn.execute("""
                 INSERT INTO multi_agent_executions (id, user_id, team_id, execution_id, goal, status, total_agents, active_agents, started_at)
@@ -127,7 +133,7 @@ class MultiAgentOrchestrator:
         
         self._active_executions[execution_id] = {
             "execution_id": execution_id,
-            "team_id": team_id,
+            "team_id": team_id_str,
             "goal": goal,
             "agent_ids": agent_ids,
             "status": "running",
