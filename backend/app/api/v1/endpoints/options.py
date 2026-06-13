@@ -4,9 +4,9 @@ Provides models and security analyzers configuration.
 """
 from fastapi import APIRouter
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
 
-router = APIRouter(prefix="/options", tags=["Options"])
+router = APIRouter(prefix="/api", tags=["Options"])
 
 
 class ModelProvider(BaseModel):
@@ -22,7 +22,7 @@ class ModelsResponse(BaseModel):
     default_model: str = "claude-sonnet-4-20250514"
 
 
-@router.get("/models", response_model=ModelsResponse)
+@router.get("/options/models", response_model=ModelsResponse)
 async def get_models():
     """
     Get available LLM models from verified providers.
@@ -59,7 +59,7 @@ async def get_models():
     )
 
 
-@router.get("/security-analyzers", response_model=List[str])
+@router.get("/options/security-analyzers", response_model=List[str])
 async def get_security_analyzers():
     """
     Get available security analyzers.
@@ -70,17 +70,3 @@ async def get_security_analyzers():
         "semgrep",
         "llm-sec-1"
     ]
-
-
-# Also add root-level /api routes for compatibility
-from fastapi import APIRouter as RootRouter
-
-root_router = RootRouter(tags=["Root Options"])
-
-@root_router.get("/api/options/models", response_model=ModelsResponse)
-async def root_get_models():
-    return await get_models()
-
-@root_router.get("/api/options/security-analyzers", response_model=List[str])
-async def root_get_security_analyzers():
-    return await get_security_analyzers()

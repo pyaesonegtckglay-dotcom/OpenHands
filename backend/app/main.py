@@ -16,7 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1 import router as api_router
 from app.api.v1.endpoints.options import router as options_router
 from app.api.v1.endpoints.settings import router as settings_router
-from app.api.v1.endpoints.conversations import router as conversations_router, root_router as conversations_root_router
+from app.api.v1.endpoints.conversations import router as conversations_router
 from app.core.config import settings
 from app.database.connection import init_db, close_pool
 
@@ -86,7 +86,6 @@ app.include_router(api_router)
 app.include_router(options_router)
 app.include_router(settings_router)
 app.include_router(conversations_router)
-app.include_router(conversations_root_router)
 
 
 @app.get("/")

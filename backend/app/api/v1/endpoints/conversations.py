@@ -1,11 +1,11 @@
 """
 Conversations endpoints for frontend compatibility.
 """
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from pydantic import BaseModel
-from typing import List, Optional, Any, Dict
+from typing import List, Optional, Any
 
-router = APIRouter(prefix="/conversations", tags=["Conversations"])
+router = APIRouter(prefix="/api", tags=["Conversations"])
 
 
 class ConversationResponse(BaseModel):
@@ -19,7 +19,7 @@ class PendingMessagesResponse(BaseModel):
     messages: List[Any] = []
 
 
-@router.get("", response_model=List[ConversationResponse])
+@router.get("/conversations", response_model=List[ConversationResponse])
 async def get_conversations():
     """
     Get all conversations.
@@ -28,7 +28,7 @@ async def get_conversations():
     return []
 
 
-@router.get("/{conversation_id}", response_model=Optional[ConversationResponse])
+@router.get("/conversations/{conversation_id}", response_model=Optional[ConversationResponse])
 async def get_conversation(conversation_id: str):
     """
     Get a specific conversation.
@@ -37,7 +37,7 @@ async def get_conversation(conversation_id: str):
     return None
 
 
-@router.post("", response_model=ConversationResponse)
+@router.post("/conversations", response_model=ConversationResponse)
 async def create_conversation():
     """
     Create a new conversation.
@@ -46,7 +46,7 @@ async def create_conversation():
     return ConversationResponse()
 
 
-@router.delete("/{conversation_id}")
+@router.delete("/conversations/{conversation_id}")
 async def delete_conversation(conversation_id: str):
     """
     Delete a conversation.
@@ -54,7 +54,7 @@ async def delete_conversation(conversation_id: str):
     return {"success": True}
 
 
-@router.get("/{conversation_id}/pending-messages", response_model=PendingMessagesResponse)
+@router.get("/conversations/{conversation_id}/pending-messages", response_model=PendingMessagesResponse)
 async def get_pending_messages(conversation_id: str):
     """
     Get pending messages for a conversation.
@@ -62,31 +62,9 @@ async def get_pending_messages(conversation_id: str):
     return PendingMessagesResponse()
 
 
-@router.get("/{conversation_id}/microagents")
+@router.get("/conversations/{conversation_id}/microagents")
 async def get_microagents(conversation_id: str):
     """
     Get microagents for a conversation.
     """
     return []
-
-
-# Also add root-level /api routes for compatibility
-from fastapi import APIRouter as RootRouter
-
-root_router = RootRouter(tags=["Root Conversations"])
-
-@root_router.get("/api/conversations", response_model=List[ConversationResponse])
-async def root_get_conversations():
-    return await get_conversations()
-
-@root_router.get("/api/conversations/{conversation_id}", response_model=Optional[ConversationResponse])
-async def root_get_conversation(conversation_id: str):
-    return await get_conversation(conversation_id)
-
-@root_router.post("/api/conversations", response_model=ConversationResponse)
-async def root_create_conversation():
-    return await create_conversation()
-
-@root_router.delete("/api/conversations/{conversation_id}")
-async def root_delete_conversation(conversation_id: str):
-    return await delete_conversation(conversation_id)
