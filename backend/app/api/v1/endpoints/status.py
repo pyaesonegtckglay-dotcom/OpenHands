@@ -7,11 +7,6 @@ import time
 import os
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, Request
-try:
-    import psutil
-    HAS_PSUTIL = True
-except ImportError:
-    HAS_PSUTIL = False
 
 from app.database.connection import check_db_health
 from app.cache.redis_client import check_redis_health
@@ -29,6 +24,13 @@ _metrics = {
     "response_times": [],
     "start_time": time.time()
 }
+
+# Try to import psutil for system metrics
+try:
+    import psutil
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
 
 
 @router.get("/health")
@@ -68,7 +70,7 @@ async def services_status():
 async def status():
     """Combined status endpoint with health and metrics."""
     health = await services_status()
-    metrics = await get_metrics() if HAS_PSUTIL else {"error": "psutil not available"}
+    metrics = await get_metrics()
     
     return {
         "health": health,
@@ -91,15 +93,18 @@ async def get_metrics():
     
     system_info = {}
     if HAS_PSUTIL:
-        memory = psutil.virtual_memory()
-        disk = psutil.disk_usage('/')
-        system_info = {
-            "cpu_percent": psutil.cpu_percent(interval=0.1),
-            "memory_percent": memory.percent,
-            "memory_used_mb": round(memory.used / (1024 * 1024), 2),
-            "memory_available_mb": round(memory.available / (1024 * 1024), 2),
-            "disk_percent": disk.percent,
-        }
+        try:
+            memory = psutil.virtual_memory()
+            disk = psutil.disk_usage('/')
+            system_info = {
+                "cpu_percent": psutil.cpu_percent(interval=0.1),
+                "memory_percent": memory.percent,
+                "memory_used_mb": round(memory.used / (1024 * 1024), 2),
+                "memory_available_mb": round(memory.available / (1024 * 1024), 2),
+                "disk_percent": disk.percent,
+            }
+        except Exception:
+            system_info = {"error": "Failed to get system info"}
     
     return {
         "system": system_info,
@@ -147,7 +152,6 @@ async def refresh_token(request: Request):
         
         # Create new tokens
         from app.core.security import create_access_token
-        from app.core.config import settings
         
         new_access_token = create_access_token({
             "sub": payload["sub"],
@@ -187,7 +191,6 @@ async def create_api_key(request: Request):
         
         # Create API key
         from app.auth.security import create_api_key as create_key
-        import secrets
         
         key = create_key(
             user_id=user_id,
