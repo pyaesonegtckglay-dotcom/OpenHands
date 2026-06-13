@@ -20,10 +20,10 @@ export interface Team {
   goal: string;
   collaboration_mode: "sequential" | "parallel" | "hierarchical";
   max_agents_parallel: number;
-  shared_context: Record<string, any>;
+  shared_context: Record<string, unknown>;
   supervisor_id: string | null;
   status: string;
-  results: Record<string, any>;
+  results: Record<string, unknown>;
   created_at: string;
   updated_at: string;
   completed_at: string | null;
@@ -38,7 +38,7 @@ export interface Execution {
   status: "initializing" | "running" | "completed" | "failed";
   created_at: string;
   completed_at: string | null;
-  results: Record<string, any>;
+  results: Record<string, unknown>;
   duration_ms: number;
   completed_agents: number;
 }
@@ -48,14 +48,43 @@ export interface ExecutionEvent {
   execution_id?: string;
   agent_id?: string;
   step?: number;
-  result?: any;
-  results?: any;
+  result?: unknown;
+  results?: unknown;
   duration_ms?: number;
   error?: string;
 }
 
 class MultiAgentService {
   private baseURL = "/api/v1";
+  private accessToken: string | null = null;
+
+  constructor() {
+    // Get token from localStorage on init
+    if (typeof window !== "undefined") {
+      this.accessToken = localStorage.getItem("access_token");
+      
+      // Listen for token updates
+      window.addEventListener("storage", (e) => {
+        if (e.key === "access_token") {
+          this.accessToken = e.newValue;
+        }
+      });
+    }
+  }
+
+  private getAuthHeaders(): Record<string, string> {
+    if (!this.accessToken) {
+      this.accessToken = localStorage.getItem("access_token");
+    }
+    return this.accessToken ? { Authorization: `Bearer ${this.accessToken}` } : {};
+  }
+
+  /**
+   * Set the access token (call after login)
+   */
+  setAccessToken(token: string) {
+    this.accessToken = token;
+  }
 
   /**
    * Get available agent types
@@ -63,7 +92,8 @@ class MultiAgentService {
   async getAgentTypes(): Promise<AgentType[]> {
     try {
       const { data } = await openHands.get<{ agent_types: AgentType[] }>(
-        `${this.baseURL}/multi-agent/agents/types`
+        `${this.baseURL}/multi-agent/agents/types`,
+        { headers: this.getAuthHeaders() }
       );
       return data?.agent_types || [];
     } catch (err) {
@@ -80,6 +110,46 @@ class MultiAgentService {
         { type: "generalist", name: "Generalist Agent", description: "Handles diverse tasks", capabilities: ["general_purpose", "adaptability"], tools: ["reasoning"] },
       ];
     }
+  }
+
+  /**
+   * Login user and get token
+   */
+  async login(email: string, password: string): Promise<{ access_token: string; user_id: string }> {
+    const { data } = await openHands.post<{ access_token: string; user_id: string }>(
+      `${this.baseURL}/auth/login`,
+      { email, password }
+    );
+    if (data.access_token) {
+      this.accessToken = data.access_token;
+      localStorage.setItem("access_token", data.access_token);
+    }
+    return data;
+  }
+
+  /**
+   * Register new user
+   */
+  async register(email: string, password: string, username: string): Promise<{ access_token: string; user_id: string }> {
+    const { data } = await openHands.post<{ access_token: string; user_id: string }>(
+      `${this.baseURL}/auth/register`,
+      { email, password, username }
+    );
+    if (data.access_token) {
+      this.accessToken = data.access_token;
+      localStorage.setItem("access_token", data.access_token);
+    }
+    return data;
+  }
+
+  /**
+   * Check if user is authenticated
+   */
+  isAuthenticated(): boolean {
+    if (!this.accessToken) {
+      this.accessToken = localStorage.getItem("access_token");
+    }
+    return !!this.accessToken;
   }
 
   /**
@@ -104,6 +174,7 @@ class MultiAgentService {
           max_parallel,
           team_name,
         },
+        headers: this.getAuthHeaders(),
       }
     );
     return data;
@@ -114,7 +185,8 @@ class MultiAgentService {
    */
   async listTeams(): Promise<Team[]> {
     const { data } = await openHands.get<{ teams: Team[]; count: number }>(
-      `${this.baseURL}/multi-agent/teams`
+      `${this.baseURL}/multi-agent/teams`,
+      { headers: this.getAuthHeaders() }
     );
     return data.teams;
   }
@@ -124,7 +196,8 @@ class MultiAgentService {
    */
   async getTeam(teamId: string): Promise<Team> {
     const { data } = await openHands.get<Team>(
-      `${this.baseURL}/multi-agent/teams/${teamId}`
+      `${this.baseURL}/multi-agent/teams/${teamId}`,
+      { headers: this.getAuthHeaders() }
     );
     return data;
   }
@@ -149,6 +222,7 @@ class MultiAgentService {
           team_id,
           collaboration_mode,
         },
+        headers: this.getAuthHeaders(),
       }
     );
     return data;
@@ -188,7 +262,7 @@ class MultiAgentService {
       `${host}/api/v1/multi-agent/execute/stream?${searchParams}`,
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          Authorization: `Bearer ${this.accessToken || localStorage.getItem("access_token")}`,
           Accept: "text/event-stream",
         },
       }
@@ -219,7 +293,7 @@ class MultiAgentService {
             onEvent(event);
             
             if (event.type === "done" && event.result) {
-              finalResult = event.result;
+              finalResult = event.result as Execution;
             }
           } catch (e) {
             console.error("Failed to parse event:", e);
@@ -241,7 +315,7 @@ class MultiAgentService {
   async listExecutions(limit = 20): Promise<Execution[]> {
     const { data } = await openHands.get<{ executions: Execution[]; count: number }>(
       `${this.baseURL}/multi-agent/executions`,
-      { params: { limit } }
+      { params: { limit }, headers: this.getAuthHeaders() }
     );
     return data.executions;
   }
@@ -251,7 +325,8 @@ class MultiAgentService {
    */
   async getExecution(executionId: string): Promise<Execution> {
     const { data } = await openHands.get<Execution>(
-      `${this.baseURL}/multi-agent/executions/${executionId}`
+      `${this.baseURL}/multi-agent/executions/${executionId}`,
+      { headers: this.getAuthHeaders() }
     );
     return data;
   }

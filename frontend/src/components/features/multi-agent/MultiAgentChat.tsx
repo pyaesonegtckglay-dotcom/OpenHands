@@ -3,7 +3,7 @@
  * Main component for multi-agent conversations
  */
 
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Card } from "#/ui/card";
 import { CardTitle } from "#/ui/card-title";
 import { Button } from "#/ui/button";
@@ -19,7 +19,109 @@ import { multiAgentService, type Execution, type ExecutionEvent } from "#/servic
 
 type CollaborationMode = "sequential" | "parallel" | "hierarchical";
 
+/**
+ * Login Form Component
+ */
+const LoginForm: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [isRegister, setIsRegister] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      if (isRegister) {
+        await multiAgentService.register(email, password, username);
+      } else {
+        await multiAgentService.login(email, password);
+      }
+      onLogin();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Authentication failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center h-full">
+      <Card className="w-full max-w-md p-6">
+        <CardTitle className="text-xl mb-4 text-center">
+          {isRegister ? "Create Account" : "Sign In"}
+        </CardTitle>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {isRegister && (
+            <div>
+              <label className="text-sm font-medium mb-1 block">Username</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="your_username"
+                className="w-full px-3 py-2 border rounded-md bg-background"
+                required
+              />
+            </div>
+          )}
+          
+          <div>
+            <label className="text-sm font-medium mb-1 block">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full px-3 py-2 border rounded-md bg-background"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="text-sm font-medium mb-1 block">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full px-3 py-2 border rounded-md bg-background"
+              required
+            />
+          </div>
+
+          {error && (
+            <div className="text-sm text-red-500 bg-red-50 dark:bg-red-950 rounded-lg p-2">
+              {error}
+            </div>
+          )}
+
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Please wait..." : isRegister ? "Create Account" : "Sign In"}
+          </Button>
+        </form>
+
+        <div className="mt-4 text-center text-sm">
+          <button
+            type="button"
+            onClick={() => setIsRegister(!isRegister)}
+            className="text-primary hover:underline"
+          >
+            {isRegister ? "Already have an account? Sign in" : "Need an account? Register"}
+          </button>
+        </div>
+      </Card>
+    </div>
+  );
+};
+
 export const MultiAgentChat: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [goal, setGoal] = useState("");
   const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
   const [collaborationMode, setCollaborationMode] = useState<CollaborationMode>("sequential");
@@ -27,17 +129,80 @@ export const MultiAgentChat: React.FC = () => {
   const [events, setEvents] = useState<ExecutionEvent[]>([]);
   const [execution, setExecution] = useState<Execution | null>(null);
   const [isExecuting, setIsExecuting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleStartExecution = () => {
-    if (!goal.trim()) return;
+  // Check authentication on mount
+  useEffect(() => {
+    setIsAuthenticated(multiAgentService.isAuthenticated());
+  }, []);
+
+  const handleLoginSuccess = useCallback(() => {
+    setIsAuthenticated(true);
+  }, []);
+
+  const handleStartExecution = useCallback(async () => {
+    if (!goal.trim() || selectedAgents.length === 0) return;
+    
     setIsExecuting(true);
+    setError(null);
     setActiveTab("activity");
-  };
+    setEvents([
+      {
+        type: "execution_started",
+        message: "Starting multi-agent execution...",
+        timestamp: new Date().toISOString(),
+      },
+    ]);
 
-  const handleExecutionComplete = (executionId: string) => {
-    setIsExecuting(false);
+    try {
+      const result = await multiAgentService.executeGoal({
+        goal: goal.trim(),
+        agentTypes: selectedAgents,
+        collaborationMode,
+      });
+
+      setExecution(result);
+      setEvents((prev) => [
+        ...prev,
+        {
+          type: "execution_completed",
+          message: `Execution completed: ${result.execution_id}`,
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+
+      // Add result events
+      if (result.results?.steps) {
+        result.results.steps.forEach((step: { step: number; output: string }, idx: number) => {
+          setEvents((prev) => [
+            ...prev,
+            {
+              type: "agent_output",
+              message: `Agent ${idx + 1} output: ${step.output?.substring(0, 100)}...`,
+              timestamp: new Date().toISOString(),
+            },
+          ]);
+        });
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Execution failed";
+      setError(errorMessage);
+      setEvents((prev) => [
+        ...prev,
+        {
+          type: "error",
+          message: `Error: ${errorMessage}`,
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+    } finally {
+      setIsExecuting(false);
+    }
+  }, [goal, selectedAgents, collaborationMode]);
+
+  const handleExecutionComplete = useCallback((executionId: string) => {
     loadExecution(executionId);
-  };
+  }, []);
 
   const loadExecution = async (executionId: string) => {
     try {
@@ -53,9 +218,31 @@ export const MultiAgentChat: React.FC = () => {
     setSelectedAgents([]);
     setEvents([]);
     setExecution(null);
+    setError(null);
   };
 
   const canExecute = goal.trim().length > 0 && selectedAgents.length > 0;
+
+  // Show login form if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="h-full flex flex-col">
+        <div className="flex-shrink-0 p-4 border-b bg-background">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">Multi-Agent Orchestration</h1>
+              <p className="text-sm text-muted-foreground">
+                Sign in to coordinate multiple AI agents
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1 overflow-hidden">
+          <LoginForm onLogin={handleLoginSuccess} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col">
@@ -149,6 +336,11 @@ export const MultiAgentChat: React.FC = () => {
             >
               {isExecuting ? "Executing..." : "Start Execution"}
             </Button>
+            {error && (
+              <div className="text-sm text-destructive bg-destructive/10 rounded-lg p-2">
+                {error}
+              </div>
+            )}
             <Button
               variant="outline"
               className="w-full"
