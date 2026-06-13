@@ -31,10 +31,12 @@ class AgentManager:
         max_tokens: int = 4096,
     ) -> Dict[str, Any]:
         """Create a new agent instance"""
-        logger.info(f"Creating agent type: {agent_type} for user: {user_uuid}, team: {team_uuid}")
+        logger.info(f"create_agent ENTRY - user_uuid type: {type(user_uuid)}, value: {user_uuid}")
+        logger.info(f"create_agent ENTRY - agent_type: {agent_type}, team_uuid: {team_uuid}")
         agent_id = str(uuid.uuid4())
         logger.info(f"Agent ID: {agent_id}")
         config = agent_registry.get(agent_type)
+        logger.info(f"Config retrieved: {config is not None}")
         
         if not config:
             raise ValueError(f"Unknown agent type: {agent_type}")
@@ -43,6 +45,7 @@ class AgentManager:
         
         pool = await get_pool()
         async with pool.acquire() as conn:
+            logger.info(f"Inserting agent into database...")
             await conn.execute("""
                 INSERT INTO agents (id, user_id, team_id, name, agent_type, description, model, temperature, max_tokens, capabilities, tools, system_prompt, status)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
@@ -61,6 +64,7 @@ class AgentManager:
                 config.system_prompt,
                 AgentStatus.IDLE.value
             )
+            logger.info(f"Agent inserted successfully")
         
         # Track in memory
         self._active_agents[agent_id] = AgentState(

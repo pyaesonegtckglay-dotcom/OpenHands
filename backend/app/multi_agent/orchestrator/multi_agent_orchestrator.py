@@ -33,7 +33,10 @@ class MultiAgentOrchestrator:
         team_name: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Create a team of agents"""
-        logger.info(f"Creating team for user: {user_uuid}, goal: {goal}")
+        logger.info(f"create_team ENTRY - user_uuid type: {type(user_uuid)}, value: {user_uuid}")
+        logger.info(f"create_team ENTRY - goal: {goal}")
+        logger.info(f"create_team ENTRY - agent_types: {agent_types}")
+        logger.info(f"create_team ENTRY - collaboration_mode: {collaboration_mode}")
         team_id = str(uuid.uuid4())
         logger.info(f"Team ID: {team_id}")
         team_name = team_name or f"Team for: {goal[:50]}"
@@ -83,7 +86,11 @@ class MultiAgentOrchestrator:
         stream_callback: Optional[callable] = None,
     ) -> Dict[str, Any]:
         """Execute a goal using multiple agents"""
-        logger.info(f"Starting execution for user: {user_uuid}, goal: {goal}")
+        logger.info(f"execute_goal ENTRY - user_uuid type: {type(user_uuid)}, value: {user_uuid}")
+        logger.info(f"execute_goal ENTRY - goal: {goal}")
+        logger.info(f"execute_goal ENTRY - agent_types: {agent_types}")
+        logger.info(f"execute_goal ENTRY - team_id: {team_id}")
+        logger.info(f"execute_goal ENTRY - collaboration_mode: {collaboration_mode}")
         execution_id = f"exec_{uuid.uuid4().hex[:12]}"
         start_time = datetime.utcnow()
         logger.info(f"Execution ID: {execution_id}")
