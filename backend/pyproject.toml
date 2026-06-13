@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools>=65.0"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "manusai-backend"
+version = "1.0.0"
+description = "ManusAI Phase 1 Backend API"
+requires-python = ">=3.12"
+
+[tool.setuptools]
+packages = ["app"]

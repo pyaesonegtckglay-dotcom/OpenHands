@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@plugin "@tailwindcss/typography";
+
+:root {
+  --background: #0d0f13;
+  --foreground: #f1f3f9;
+
+  /* Design tokens */
+  --surface-0: #0d0f13;
+  --surface-1: #111318;
+  --surface-2: #1a1d24;
+  --surface-3: #1e2128;
+  --surface-4: #252830;
+  --border: #1e2128;
+  --border-subtle: #252830;
+  --text-primary: #f1f3f9;
+  --text-secondary: #8b92a0;
+  --text-muted: #4a5060;
+  --accent-blue: #3b82f6;
+  --accent-violet: #7c3aed;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#__next {
+  height: 100%;
+}
+
+/* Custom scrollbar — minimal */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #252830;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3d48;
+}
+
+/* Slide-in animation for mobile drawer */
+@keyframes slide-in-from-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-in.slide-in-from-left {
+  animation: slide-in-from-left 0.2s ease-out;
+}
+
+/* Bounce keyframe for thinking dots */
+@keyframes bounce-custom {
+  0%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-5px); }
+}
+
+/* Prose improvements for AI responses */
+.prose-invert pre {
+  border-radius: 10px;
+  font-size: 0.8rem;
+}
+
+.prose-invert code:not(pre code) {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.8em;
+}
+
+.prose-invert a {
+  color: var(--accent-blue);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Prevent layout shift on page load */
+.no-fouc {
+  visibility: hidden;
+}
+.no-fouc.ready {
+  visibility: visible;
+}
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+/* Prevent horizontal scrolling */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}

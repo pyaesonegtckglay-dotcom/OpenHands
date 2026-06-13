@@ -13,6 +13,7 @@ import i18n from "#/i18n";
 import { useIsAuthed } from "#/hooks/query/use-is-authed";
 import { useConfig } from "#/hooks/query/use-config";
 import { Sidebar } from "#/components/features/sidebar/sidebar";
+import { AppShell } from "#/components/features/shell";
 import { ReauthModal } from "#/components/features/waitlist/reauth-modal";
 import { AnalyticsConsentFormModal } from "#/components/features/analytics/analytics-consent-form-modal";
 import { useSettings } from "#/hooks/query/use-settings";
@@ -252,17 +253,13 @@ export default function MainApp() {
     loginMethodExists;
 
   return (
-    <div
-      data-testid="root-layout"
-      className={cn(
-        "h-screen lg:min-w-5xl flex flex-col md:flex-row bg-base overflow-hidden",
-        pathname === "/" ? "p-0" : "p-0 md:p-3 md:pl-0",
-      )}
-    >
-      <title>{appTitle}</title>
-      <Sidebar />
+    <AppShell>
+      <div
+        data-testid="root-layout"
+        className="flex flex-col w-full h-full overflow-hidden"
+      >
+        <title>{appTitle}</title>
 
-      <div className="flex flex-col w-full min-w-0 h-[calc(100%-50px)] md:h-full gap-3">
         {config.data &&
           (config.data.maintenance_start_time ||
             (config.data.faulty_models &&
@@ -302,6 +299,6 @@ export default function MainApp() {
           onSuccess={handleInvitationSuccess}
         />
       )}
-    </div>
+    </AppShell>
   );
 }
